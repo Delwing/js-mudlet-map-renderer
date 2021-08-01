@@ -3,8 +3,9 @@ const fs = require('fs');
 const Renderer = require("./map-fragment/draw/renderer").Renderer
 const MapReader = require("./map-fragment/reader/MapReader").MapReader
 
-let data = require("./map-fragment/data/mapExport")
-let colors = require("./map-fragment/data/colors")
+require("./map-fragment/data/mapExport")
+require("./map-fragment/data/colors")
+let data = mapData
 
 let reader = new MapReader(data, colors)
 
@@ -17,7 +18,7 @@ let area = reader.getAreaById(roomLimits.id)
 let scale = 30
 let padding = 10
 
-let renderer = new Renderer(null, area, reader.getColors(), scale)
+let renderer = new Renderer(null, area, reader.getColors(), scale, "./data/labels")
 renderer.render()
 renderer.renderPosition(idLimits)
 renderer.transform()
