@@ -18,7 +18,7 @@ let area = reader.getAreaById(roomLimits.id)
 let scale = 30
 let padding = 10
 
-let renderer = new Renderer(null, area, reader.getColors(), scale, "./data/labels")
+let renderer = new Renderer(null, area, reader.getColors(), scale)
 renderer.render()
 renderer.renderPosition(idLimits)
 renderer.transform()
