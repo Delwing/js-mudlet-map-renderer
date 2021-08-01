@@ -127,8 +127,8 @@ class Renderer {
             path.strokeColor = this.defualtColor
         } else {
             secondPoint = new paper.Point(room.x + 0.25, room.y + 0.25);
-            // let roomProperties = roomIndex[exit];
-            let color// = envColors[roomProperties.env];
+            // let roomProperties = roomIndex[exit];            
+            let color = this.colors[room.env];
             if (color === undefined) {
                 color = [114, 1, 0];
             }
@@ -302,15 +302,16 @@ class Renderer {
 
     renderChar(room) {
         this.charsLayer.activate();
-        let size = 0.35;
-        let text = new paper.PointText(room.x + (this.pngRender ? 0.145 : 0.25), room.y + 0.25 + (0.25 * size));
-        text.fillColor = this.lightnessDependantColor(room);
-        text.fontSize = size;
-        text.content = room.roomChar;
-        text.justification = 'center';
-        text.locked = true;
-
-        text.scale(1, -1)
+        if (room.roomChar) {
+            let size = 0.35;
+            let text = new paper.PointText(room.x + (this.pngRender ? 0.145 : 0.25), room.y + 0.25 + (0.25 * size));
+            text.fillColor = this.lightnessDependantColor(room);
+            text.fontSize = size;
+            text.content = room.roomChar;
+            text.justification = 'center';
+            text.locked = true;
+            text.scale(1, -1)
+        }
     }
 
     renderDoors(firstPoint, secondPoint) {

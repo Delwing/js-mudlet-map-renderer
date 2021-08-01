@@ -23,7 +23,7 @@ class MapReader {
         });
         this.colors = {}
         colors.forEach(element => {
-            this.colors[element.envId] = element.colors;
+            this.colors[parseInt(element.envId)] = element.colors;
         });
         this.colors.default = [255, 255, 255];
     }
