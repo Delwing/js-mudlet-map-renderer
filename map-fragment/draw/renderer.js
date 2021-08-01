@@ -5,7 +5,7 @@ const paper = require('paper')
 const padding = 1
 
 class Renderer {
-    constructor(element, area, colors, scale = 55,  gridSize = 10, roomSize = 5, pixMaps) {
+    constructor(element, area, colors, scale = 55,  gridSize = 10, roomSize = 5) {
         this.area = area;
         this.colors = colors
         this.scale = scale
@@ -14,7 +14,6 @@ class Renderer {
         this.roomFactor = roomSize / gridSize
         this.exitFactor = this.roomFactor * 2
         this.ladders = ["up", "down"];
-        this.labelPath = labelPath
         this.paper = paper
         if (element == undefined) {
             let bounds = this.area.getAreaBounds()
@@ -325,11 +324,11 @@ class Renderer {
     }
 
     renderLabel(value) {
-        this.labelsLayer.activate()
+        this.labelsLayer.activate();
         if (value.Pixmap) {
-            let label = new paper.Raster("data:image/png;base64," + value.Pixmap)
-            label.position = new paper.Point(value.X + value.Width / 2, value.Y)
-            label.scale(value.Width / label._size.width, -value.Height / label._size.height)
+            let label = new paper.Raster("data:image/png;base64," + value.Pixmap);
+            label.position = new paper.Point(value.X + value.Width / 2, value.Y);
+            label.scale(value.Width / label._size.width, -value.Height / label._size.height);
         }
     }
     
