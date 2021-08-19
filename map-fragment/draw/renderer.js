@@ -1,6 +1,7 @@
 let MapReader = require("../reader/MapReader").MapReader
 
 const paper = require('paper')
+let Controls = require("./controls").Controls
 
 const padding = 1
 
@@ -30,6 +31,9 @@ class Renderer {
         this.exitsRendered = {}
         this.isVisual = paper.view.element !== null
         this.defualtColor = new paper.Color(this.colors.default[0] / 255, this.colors.default[1] / 255, this.colors.default[2] / 255);
+        if (this.isVisual) {
+            this.controls = new Controls(this, element, paper)
+        }
     }
 
 
@@ -303,8 +307,8 @@ class Renderer {
     renderChar(room) {
         this.charsLayer.activate();
         if (room.roomChar) {
-            let size = 0.35;
-            let text = new paper.PointText(room.x + (this.pngRender ? 0.145 : 0.25), room.y + 0.25 + (0.25 * size));
+            let size = 0.85 * this.roomFactor;
+            let text = new paper.PointText(room.render.position.x, room.render.position.y + size / 4);
             text.fillColor = this.lightnessDependantColor(room);
             text.fontSize = size;
             text.content = room.roomChar;
@@ -325,11 +329,10 @@ class Renderer {
     }
 
     renderLabel(value) {
-        this.labelsLayer.activate();
-        if (value.Pixmap) {
-            let label = new paper.Raster("data:image/png;base64," + value.Pixmap);
-            label.position = new paper.Point(value.X + value.Width / 2, value.Y);
-            label.scale(value.Width / label._size.width, -value.Height / label._size.height);
+        if (value.pixMap) {
+            let label = new paper.Raster("data:image/png;base64," + value.pixMap);
+            label.position = new paper.Point(value.X + this.baseSize / 2, value.Y + this.baseSize / 2);
+            label.scale(0.8 / this.baseSize, -0.8 / this.baseSize, new paper.Point(value.X + 5, value.Y))
         }
     }
     
