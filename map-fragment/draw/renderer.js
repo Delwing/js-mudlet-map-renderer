@@ -51,6 +51,7 @@ class Renderer {
             this.bgLabels.activate();
             this.area.labels.forEach((value) => this.renderLabel(value), this);
         }
+        this.matrix = new paper.Matrix(1, 0, 0, -1, -bounds.minX + padding, bounds.maxY + padding).scale(this.scale, new paper.Point(bounds.minX, bounds.maxY))
     }
 
     transform() {
