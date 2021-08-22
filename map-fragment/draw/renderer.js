@@ -6,12 +6,13 @@ let Controls = require("./controls").Controls;
 const padding = 1;
 
 class Renderer {
-    constructor(element, area, colors, scale = 55, gridSize = 10, roomSize = 5) {
+    constructor(element, area, colors, scale = 55, gridSize = 10, roomSize = 5, renderLabels = true) {
         this.area = area;
         this.colors = colors;
         this.scale = scale;
         this.baseSize = gridSize = gridSize;
         this.roomSize = roomSize = roomSize;
+        this.renderLabels = renderLabels = renderLabels
         this.roomFactor = roomSize / gridSize;
         this.exitFactor = this.roomFactor * 2;
         this.ladders = ["up", "down"];
@@ -46,7 +47,7 @@ class Renderer {
             this.renderRoom(value);
         });
         //TODO Setting for area labels
-        if (this.area.labels !== undefined) {
+        if (this.area.labels !== undefined && this.renderLabels) {
             this.bgLabels.activate();
             this.area.labels.forEach((value) => this.renderLabel(value), this);
         }
