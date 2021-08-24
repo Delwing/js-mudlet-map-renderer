@@ -8,10 +8,16 @@ class Controls {
         this.view = paperScope.view;
         this.element.onwheel = (event) => this.zoom(event);
         this.activateDrag();
+        this.element.addEventListener("roomClick", this.selectRoom);
+
+        let bounds = this.renderer.getBounds();
+
+        this.view.center = bounds.center;
+        this.view.zoom = Math.min(this.view.size.width / bounds.width, this.view.size.height / bounds.height);
+        this.view.minZoom = this.view.zoom;
     }
 
     zoom(event) {
-        console.log(event);
         event.preventDefault();
         let oldZoom = this.view.zoom;
         if (event.deltaY > 0) {
@@ -20,11 +26,16 @@ class Controls {
             this.view.zoom *= 1.1;
         }
 
+        this.view.zoom = Math.min(Math.max(this.view.zoom, this.view.minZoom), 50);
         let viewPos = this.view.viewToProject(new paper.Point(event.offsetX, event.offsetY));
         let zoomScale = oldZoom / this.view.zoom;
         let centerAdjust = viewPos.subtract(this.view.center);
         let offset = viewPos.subtract(centerAdjust.multiply(zoomScale)).subtract(this.view.center);
         this.view.center = this.view.center.add(offset);
+    }
+
+    setZoom(value) {
+        this.view.zoom = value
     }
 
     activateDrag() {
@@ -41,13 +52,37 @@ class Controls {
             this.view.translate(delta.negate());
             this.isDrag = true;
         };
-        toolPan.onMouseDown = (event) => {
+        toolPan.onMouseDown = () => {
             this.isDrag = false;
         };
         toolPan.onMouseUp = (event) => {
             this.isDrag = false;
             this.element.style.cursor = "default";
         };
+    }
+
+    selectRoom(event) {
+        // if (this.selected !== undefined) {
+        //     this.selected.exitsRenders.forEach((render) => (  render.style = {
+        //         strokeColor: "white",
+        //         strokeWidth: 1,
+        //     }));
+        // }
+        // let room = event.detail;
+        // room.exitsRenders.forEach((render) => {
+        //     render.style = {
+        //         strokeColor: "red",
+        //         strokeWidth: 1,
+        //     };
+        // });
+        // this.selected = room;
+    }
+
+    centerRoom(id) {
+        let room = this.renderer.area.getRoomById(id)
+        if (room !== undefined) {
+            this.view.center = room.render.position
+        }
     }
 }
 
