@@ -21,6 +21,9 @@ class Renderer {
         if (element == undefined) {
             let bounds = this.area.getAreaBounds();
             element = new paper.Size((bounds.width + padding * 2) * scale, (bounds.height + padding * 2) * scale);
+            this.isVisual = false
+        } else {
+            this.isVisual = true
         }
         this.paper.setup(element);
         this.element = element;
@@ -33,7 +36,6 @@ class Renderer {
         this.charsLayer = new paper.Layer();
         this.overlayLayer = new paper.Layer();
         this.exitsRendered = {};
-        this.isVisual = this.paper.view.element !== null;
         this.defualtColor = new paper.Color(this.colors.default[0] / 255, this.colors.default[1] / 255, this.colors.default[2] / 255);
     }
 
