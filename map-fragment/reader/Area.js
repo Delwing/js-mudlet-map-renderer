@@ -23,6 +23,12 @@ class Area {
             maxX = Math.max(maxX, element.x);
             maxY = Math.max(maxY, element.y);
         });
+        this.labels.forEach(function (element) {
+            minX = Math.min(minX, element.X);
+            minY = Math.min(minY, element.Y);
+            maxX = Math.max(maxX, element.X + element.Width / 1.5);
+            maxY = Math.max(maxY, element.Y + element.Height / 1.5);
+        })
         return { minX: minX, minY: minY, maxX: maxX, maxY: maxY, width : maxX - minX, height : maxY - minY }
     }
 

@@ -1,5 +1,4 @@
 let MapReader = require("../reader/MapReader").MapReader;
-
 const paper = require("paper");
 let Controls = require("./controls").Controls;
 
@@ -21,9 +20,9 @@ class Renderer {
         if (element == undefined) {
             let bounds = this.area.getAreaBounds();
             element = new paper.Size((bounds.width + padding * 2) * scale, (bounds.height + padding * 2) * scale);
-            this.isVisual = false
+            this.isVisual = false;
         } else {
-            this.isVisual = true
+            this.isVisual = true;
         }
         this.paper.setup(element);
         this.element = element;
@@ -43,8 +42,8 @@ class Renderer {
         this.pngRender = pngRender;
         let bounds = this.area.getAreaBounds();
         let padding = 0.25 * this.scale;
-        this.drawBackground(bounds.minX - padding, bounds.minY - padding, bounds.maxX + padding, bounds.maxY + padding);
-        this.drawHeader();
+        this.renderBackground(bounds.minX - padding, bounds.minY - padding, bounds.maxX + padding, bounds.maxY + padding);
+        this.renderHeader();
         this.area.rooms.forEach((value) => {
             this.renderRoom(value);
         });
@@ -70,13 +69,13 @@ class Renderer {
         });
     }
 
-    drawBackground(x1, y1, x2, y2) {
+    renderBackground(x1, y1, x2, y2) {
         this.backgroundLayer.activate();
         let background = new paper.Path.Rectangle(new paper.Point(x1, y1), new paper.Point(x2, y2));
         background.fillColor = new paper.Color(0, 0, 0);
     }
 
-    drawHeader() {
+    renderHeader() {
         this.backgroundLayer.activate();
         let bounds = this.getBounds();
         let header = new paper.PointText(bounds.x + 3, bounds.y + bounds.height - 3);
@@ -277,7 +276,7 @@ class Renderer {
 
     drawArrow(lineStart, lineEnd, color, dashArray, strokeWidth, strokeColor, isOneWay) {
         let arrowPoint = lineEnd;
-        let arrow = new paper.Path.RegularPolygon(arrowPoint, 3, this.roomDiagonal / 5);
+        let arrow = new paper.Path.RegularPolygon(arrowPoint, 3, this.roomDiagonal / 6);
         arrow.position = arrow.position.add(arrow.bounds.topCenter.subtract(arrow.bounds.center));
         arrow.rotate(lineEnd.subtract(lineStart).getAngle() + 90, lineEnd);
         let tailLine = new paper.Path.Line(lineStart, arrow.bounds.center);
@@ -294,8 +293,8 @@ class Renderer {
         if (isOneWay) {
             arrow.position = new paper.Point(lineEnd.x + (lineStart.x - lineEnd.x) / 2, lineEnd.y + (lineStart.y - lineEnd.y) / 2);
             tailLine.dashArray = [1, 1];
-            arrow.fillColor = "red";
-            arrow.scale(1.5)
+            path.fillColor = new paper.Color(1, 0, 0);
+            arrow.scale(1.5);
         } else {
             tailLine.strokeWidth = strokeWidth;
         }
@@ -365,15 +364,15 @@ class Renderer {
     }
 
     renderLabel(value) {
-        if (value.pixMap) {
-            let label = new paper.Raster("data:image/png;base64," + value.pixMap);
-            label.position = new paper.Point(value.X + this.roomFactor, value.Y);
-            label.onLoad = () => {
-                label._size.width = value.Width;
-                label._size.height = value.Height;
-                label.scale(0.05, -0.05);
-            };
-        }
+        let background = new paper.Path.Rectangle(new paper.Point(value.X, value.Y - value.Height), new paper.Size(value.Width, value.Height));
+        background.fillColor = new paper.Color(value.BgColor.r / 255, value.BgColor.g / 255, value.BgColor.b / 255);
+        let text = new paper.PointText(background.bounds.center.add(0, 0.1));
+        text.fillColor = new paper.Color(value.FgColor.r / 255, value.FgColor.g / 255, value.FgColor.b / 255);
+        text.fontSize = Math.min(value.Width * (1.2 / value.text.length), value.Height * 0.4)
+        text.content = value.text;
+        text.justification = "center";
+        text.locked = true;
+        text.scale(1, -1);
     }
 
     lightnessDependantColor(room) {

@@ -24,3 +24,4 @@ if (params.area2 !== undefined) {
 document.getElementById("map").addEventListener('roomClick', function(room) {
     console.log(room)
 })
+
