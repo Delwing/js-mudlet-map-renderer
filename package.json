@@ -6,6 +6,7 @@
         "babelify": "8",
         "browserify": "^17.0.0",
         "paper-jsdom": "^0.12.15",
+        "sharp": "^0.29.0",
         "tsc": "^2.0.3",
         "watchify": "^4.0.0"
     },

@@ -15,6 +15,13 @@ class Settings {
 }
 
 class Renderer {
+    /**
+     * 
+     * @param {HTMLElement} element 
+     * @param {*} area 
+     * @param {*} colors 
+     * @param {Settings} settings 
+     */
     constructor(element, area, colors, settings) {
         this.settings = new Settings();
         Object.assign(this.settings, settings);
@@ -387,6 +394,7 @@ class Renderer {
         text.fillColor = new paper.Color(value.FgColor.r / 255, value.FgColor.g / 255, value.FgColor.b / 255);
         text.fontSize = Math.min(value.Width * (1.2 / value.text.length), value.Height * 0.4);
         text.content = value.text;
+        text.fontFamily = 'Arial'
         text.justification = "center";
         text.locked = true;
         text.scale(1, -1);

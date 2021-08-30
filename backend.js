@@ -9,16 +9,23 @@ let data = mapData;
 
 let reader = new MapReader(data, colors);
 
-let idLimits = 24334;
+let idLimits = 6295;
 
 let roomLimits = reader.roomIndex[idLimits];
 let area = reader.getAreaById(roomLimits.id);
 let scale = 30;
+let padding = 5
+let limit = true;
 
-let renderer = new Renderer(null, area, reader.getColors(), {scale: scale});
+let renderer = new Renderer(null, area, reader.getColors(), {scale: scale, renderLabels: true});
 renderer.renderPosition(idLimits);
 renderer.render();
-// let bounds = new paper.Rectangle(renderer.getRealPoint(new paper.Point(roomLimits.x, roomLimits.y)).subtract(padding * scale), padding * 2 * scale, padding * 2 * scale)
-var svg = renderer.paper.project.exportSVG({ asString: true, bounds: 'content' });
+let bounds
+if (!limit) {
+    bounds = 'content';
+} else {
+    bounds = new paper.Rectangle(renderer.getRealPoint(new paper.Point(roomLimits.x, roomLimits.y)).subtract(padding * scale), padding * 2 * scale, padding * 2 * scale);
+}
+var svg = renderer.paper.project.exportSVG({ asString: true, bounds: bounds });
 fs.writeFileSync("dist/map.svg", svg);
 console.log("Map generated");
