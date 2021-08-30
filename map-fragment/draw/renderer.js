@@ -4,22 +4,34 @@ let Controls = require("./controls").Controls;
 
 const padding = 1;
 
+class Settings {
+    isRound = false;
+    scale = 55;
+    gridSize = 10;
+    roomSize = 5;
+    renderLabels = true;
+    borders = false;
+    frameMode = false;
+}
+
 class Renderer {
-    constructor(element, area, colors, scale = 55, gridSize = 10, roomSize = 5, renderLabels = true) {
+    constructor(element, area, colors, settings) {
+        this.settings = new Settings();
+        Object.assign(this.settings, settings);
         this.area = area;
         this.colors = colors;
-        this.scale = scale;
-        this.baseSize = gridSize = gridSize;
-        this.roomSize = roomSize = roomSize;
-        this.renderLabels = renderLabels = renderLabels;
-        this.roomFactor = roomSize / gridSize;
+        this.scale = this.settings.scale;
+        this.baseSize = this.settings.gridSize;
+        this.roomSize = this.settings.roomSize;
+        this.renderLabels = this.settings.renderLabels;
+        this.roomFactor = this.roomSize / this.baseSize;
         this.exitFactor = this.roomFactor * 2;
         this.roomDiagonal = this.roomFactor * Math.sqrt(2);
         this.ladders = ["up", "down"];
         this.paper = new paper.PaperScope();
         if (element == undefined) {
             let bounds = this.area.getAreaBounds();
-            element = new paper.Size((bounds.width + padding * 2) * scale, (bounds.height + padding * 2) * scale);
+            element = new paper.Size((bounds.width + padding * 2) * this.scale, (bounds.height + padding * 2) * this.scale);
             this.isVisual = false;
         } else {
             this.isVisual = true;
@@ -87,15 +99,20 @@ class Renderer {
 
     renderRoom(room) {
         this.roomLayer.activate();
-        let roomShape = new paper.Path.Rectangle(room.x, room.y, this.roomFactor, this.roomFactor);
+        let roomShape;
+        if (!this.settings.isRound) {
+            roomShape = new paper.Path.Rectangle(new paper.Point(room.x, room.y), new paper.Size(this.roomFactor, this.roomFactor));
+        } else {
+            roomShape = new paper.Path.Circle(new paper.Point(room.x + this.roomFactor / 2, room.y + this.roomFactor / 2), this.roomFactor / 2 )
+        }
         let color = this.colors[room.env];
         if (color === undefined) {
             color = [114, 1, 0];
         }
         let roomColor = new paper.Color(color[0] / 255, color[1] / 255, color[2] / 255, 1);
-        roomShape.fillColor = roomColor;
+        roomShape.fillColor = !this.settings.frameMode ? roomColor : new paper.Color(0, 0, 0);
         roomShape.strokeWidth = this.exitFactor;
-        roomShape.strokeColor = roomColor;
+        roomShape.strokeColor = !this.settings.borders || this.settings.frameMode ? roomColor : this.defualtColor;
 
         room.render = roomShape;
 
@@ -154,7 +171,7 @@ class Renderer {
                 path.strokeWidth = 1 * this.roomFactor;
                 path.strokeColor = this.defualtColor;
             } else {
-                this.drawArrow(exitPoint, secondPoint, this.defualtColor, [], 1, this.defualtColor, true);
+                this.renderArrow(exitPoint, secondPoint, this.defualtColor, [], 1, this.defualtColor, true);
             }
         } else {
             secondPoint = new paper.Point(room.x + this.roomFactor / 2, room.y + this.roomFactor / 2);
@@ -162,7 +179,7 @@ class Renderer {
             if (color === undefined) {
                 color = [114, 1, 0];
             }
-            path = this.drawArrow(exitPoint, secondPoint, new paper.Color(color[0] / 255, color[1] / 255, color[2] / 255), [], 1);
+            path = this.renderArrow(exitPoint, secondPoint, new paper.Color(color[0] / 255, color[1] / 255, color[2] / 255), [], 1);
             path.rotate(180, exitPoint);
         }
 
@@ -197,7 +214,7 @@ class Renderer {
             path.strokeWidth = 1;
         } else {
             secondPoint = new paper.Point(room.x + this.roomFactor / 2, room.y + this.roomFactor / 2);
-            path = this.drawArrow(exitPoint, secondPoint, this.defualtColor, [], 1);
+            path = this.renderArrow(exitPoint, secondPoint, this.defualtColor, [], 1);
             path.strokeColor = this.defualtColor;
             path.scale(1, exitPoint);
             path.rotate(180, exitPoint);
@@ -259,7 +276,7 @@ class Renderer {
         customLine.addChild(path);
 
         if (room.customLines[dir].attributes.arrow && path.segments.length > 1) {
-            let arrow = this.drawArrow(
+            let arrow = this.renderArrow(
                 path.segments[path.segments.length - 2].point,
                 path.segments[path.segments.length - 1].point,
                 path.strokeColor,
@@ -274,7 +291,7 @@ class Renderer {
         return path;
     }
 
-    drawArrow(lineStart, lineEnd, color, dashArray, strokeWidth, strokeColor, isOneWay) {
+    renderArrow(lineStart, lineEnd, color, dashArray, strokeWidth, strokeColor, isOneWay) {
         let arrowPoint = lineEnd;
         let arrow = new paper.Path.RegularPolygon(arrowPoint, 3, this.roomDiagonal / 6);
         arrow.position = arrow.position.add(arrow.bounds.topCenter.subtract(arrow.bounds.center));
@@ -368,7 +385,7 @@ class Renderer {
         background.fillColor = new paper.Color(value.BgColor.r / 255, value.BgColor.g / 255, value.BgColor.b / 255);
         let text = new paper.PointText(background.bounds.center.add(0, 0.1));
         text.fillColor = new paper.Color(value.FgColor.r / 255, value.FgColor.g / 255, value.FgColor.b / 255);
-        text.fontSize = Math.min(value.Width * (1.2 / value.text.length), value.Height * 0.4)
+        text.fontSize = Math.min(value.Width * (1.2 / value.text.length), value.Height * 0.4);
         text.content = value.text;
         text.justification = "center";
         text.locked = true;
@@ -397,6 +414,9 @@ class Renderer {
     }
 
     getExitX(x, dir) {
+        if (this.settings.isRound) {
+            return x + 0.25 * this.exitFactor;
+        }
         switch (dir) {
             case "west":
             case "w":
@@ -418,6 +438,9 @@ class Renderer {
     }
 
     getExitY(y, dir) {
+        if (this.settings.isRound) {
+            return y + 0.25 * this.exitFactor;
+        }
         switch (dir) {
             case "north":
             case "n":

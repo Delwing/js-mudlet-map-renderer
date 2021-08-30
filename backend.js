@@ -15,7 +15,7 @@ let roomLimits = reader.roomIndex[idLimits];
 let area = reader.getAreaById(roomLimits.id);
 let scale = 30;
 
-let renderer = new Renderer(null, area, reader.getColors(), scale);
+let renderer = new Renderer(null, area, reader.getColors(), {scale: scale});
 renderer.renderPosition(idLimits);
 renderer.render();
 // let bounds = new paper.Rectangle(renderer.getRealPoint(new paper.Point(roomLimits.x, roomLimits.y)).subtract(padding * scale), padding * 2 * scale, padding * 2 * scale)
