@@ -390,9 +390,9 @@ class Renderer {
     renderLabel(value) {
         let background = new paper.Path.Rectangle(new paper.Point(value.X, value.Y - value.Height), new paper.Size(value.Width, value.Height));
         background.fillColor = new paper.Color(value.BgColor.r / 255, value.BgColor.g / 255, value.BgColor.b / 255);
-        let text = new paper.PointText(background.bounds.center.add(0, 0.1));
+        let text = new paper.PointText(background.bounds.center.add(0, 0.04));
         text.fillColor = new paper.Color(value.FgColor.r / 255, value.FgColor.g / 255, value.FgColor.b / 255);
-        text.fontSize = Math.min(value.Width * (1.2 / value.text.length), value.Height * 0.4);
+        text.fontSize = Math.min(value.Width * (1.5 / value.text.length), value.Height * 0.8);
         text.content = value.text;
         text.fontFamily = 'Arial'
         text.justification = "center";

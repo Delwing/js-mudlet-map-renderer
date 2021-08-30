@@ -15,9 +15,9 @@ let roomLimits = reader.roomIndex[idLimits];
 let area = reader.getAreaById(roomLimits.id);
 let scale = 30;
 let padding = 5
-let limit = true;
+let limit = false;
 
-let renderer = new Renderer(null, area, reader.getColors(), {scale: scale, renderLabels: true});
+let renderer = new Renderer(null, area, reader.getColors(), {scale: scale, roomSize: 1, gridSize: 2, renderLabels: true});
 renderer.renderPosition(idLimits);
 renderer.render();
 let bounds
