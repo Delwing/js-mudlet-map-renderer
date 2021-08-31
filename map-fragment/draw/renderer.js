@@ -214,7 +214,7 @@ class Renderer {
         if (targetRoom) {
             path = new paper.Path();
             path.moveTo(exitPoint);
-            let connectedDir = getKeyByValue(targetRoom.exits, room1.id);
+            let connectedDir = getKeyByValue(targetRoom.exits, room.id);
             secondPoint = new paper.Point(this.getExitX(targetRoom.x, connectedDir), this.getExitY(targetRoom.y, connectedDir));
             path.lineTo(secondPoint);
 
@@ -392,7 +392,7 @@ class Renderer {
         background.fillColor = new paper.Color(value.BgColor.r / 255, value.BgColor.g / 255, value.BgColor.b / 255);
         let text = new paper.PointText(background.bounds.center.add(0, 0.04));
         text.fillColor = new paper.Color(value.FgColor.r / 255, value.FgColor.g / 255, value.FgColor.b / 255);
-        text.fontSize = Math.min(value.Width * (1.5 / value.text.length), value.Height * 0.8);
+        text.fontSize = 0.6
         text.content = value.text;
         text.fontFamily = 'Arial'
         text.justification = "center";
