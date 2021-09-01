@@ -18,13 +18,15 @@ class Renderer {
     /**
      * 
      * @param {HTMLElement} element 
+     * @param {MapReader} reader
      * @param {*} area 
      * @param {*} colors 
      * @param {Settings} settings 
      */
-    constructor(element, area, colors, settings) {
+    constructor(element, reader, area, colors, settings) {
         this.settings = new Settings();
         Object.assign(this.settings, settings);
+        this.reader = reader;
         this.area = area;
         this.colors = colors;
         this.scale = this.settings.scale;
@@ -182,7 +184,7 @@ class Renderer {
             }
         } else {
             secondPoint = new paper.Point(room.x + this.roomFactor / 2, room.y + this.roomFactor / 2);
-            let color = this.colors[room.env];
+            let color = this.colors[this.reader.getRoomById(targetId).env];
             if (color === undefined) {
                 color = [114, 1, 0];
             }
