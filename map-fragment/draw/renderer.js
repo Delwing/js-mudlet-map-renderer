@@ -487,6 +487,18 @@ class Renderer {
         circle.strokeWidth = 0.1;
         circle.strokeColor = new paper.Color(0.9, 0.9, 0.9, 1);
     }
+
+    renderSelection(id, color) {
+        this.overlayLayer.activate();
+        let room = this.area.getRoomById(id);
+        let selection = new paper.Path.Rectangle(new paper.Point(room.x - 0.05, room.y - 0.05), new paper.Size(this.roomFactor + 0.1, this.roomFactor + 0.1));
+        selection.fillColor = new paper.Color(1,1,1,0);
+        selection.strokeWidth = 1
+        if (color === undefined) {
+            color = [0, 0.9, 0.7]
+        }
+        selection.strokeColor = new paper.Color(color[0], color[1], color[2]);
+    }
 }
 
 module.exports = {
