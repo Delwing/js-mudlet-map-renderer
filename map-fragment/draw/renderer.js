@@ -16,12 +16,12 @@ class Settings {
 
 class Renderer {
     /**
-     * 
-     * @param {HTMLElement} element 
+     *
+     * @param {HTMLElement} element
      * @param {MapReader} reader
-     * @param {*} area 
-     * @param {*} colors 
-     * @param {Settings} settings 
+     * @param {*} area
+     * @param {*} colors
+     * @param {Settings} settings
      */
     constructor(element, reader, area, colors, settings) {
         this.settings = new Settings();
@@ -62,7 +62,7 @@ class Renderer {
     render(pngRender = false) {
         this.pngRender = pngRender;
         let bounds = this.area.getAreaBounds();
-        let padding = 0.25 * this.scale;
+        let padding = 0.10 * this.scale;
         this.renderBackground(bounds.minX - padding, bounds.minY - padding, bounds.maxX + padding, bounds.maxY + padding);
         this.renderHeader();
         this.area.rooms.forEach((value) => {
@@ -75,7 +75,7 @@ class Renderer {
         this.matrix = new paper.Matrix(1, 0, 0, -1, -bounds.minX + padding, bounds.maxY + padding).scale(this.scale, new paper.Point(bounds.minX, bounds.maxY));
         this.transform();
         if (this.isVisual) {
-            this.controls = new Controls(this, this.element, this.paper);
+            this.controls = new Controls(this, this.reader, this.element, this.paper);
         }
     }
 
@@ -94,14 +94,19 @@ class Renderer {
         this.backgroundLayer.activate();
         let background = new paper.Path.Rectangle(new paper.Point(x1, y1), new paper.Point(x2, y2));
         background.fillColor = new paper.Color(0, 0, 0);
+        if (this.isVisual) {
+            background.onClick = () => {
+                this.element.dispatchEvent(new CustomEvent("backgroundClick"))
+            }
+        }
     }
 
     renderHeader() {
         this.backgroundLayer.activate();
         let bounds = this.getBounds();
-        let header = new paper.PointText(bounds.x + 3, bounds.y + bounds.height - 3);
+        let header = new paper.PointText(bounds.x + 2.5, bounds.y + bounds.height - 2.5);
         header.fillColor = new paper.Color(1, 1, 1, 1);
-        header.fontSize = 3;
+        header.fontSize = 2.5;
         header.content = this.area.areaName;
         header.scale(1, -1);
     }
@@ -112,7 +117,7 @@ class Renderer {
         if (!this.settings.isRound) {
             roomShape = new paper.Path.Rectangle(new paper.Point(room.x, room.y), new paper.Size(this.roomFactor, this.roomFactor));
         } else {
-            roomShape = new paper.Path.Circle(new paper.Point(room.x + this.roomFactor / 2, room.y + this.roomFactor / 2), this.roomFactor / 2 )
+            roomShape = new paper.Path.Circle(new paper.Point(room.x + this.roomFactor / 2, room.y + this.roomFactor / 2), this.roomFactor / 2);
         }
         let color = this.colors[room.env];
         if (color === undefined) {
@@ -333,7 +338,7 @@ class Renderer {
         let startPoint = new paper.Point(room.x + 0.25, room.y + 0.25);
         let path;
         if (this.ladders.indexOf(dir) > -1) {
-            path = this.renderLadder(room, dir, true)
+            path = this.renderLadder(room, dir, true);
         } else {
             let exitPoint = new paper.Point(this.getExitX(room.x, dir), this.getExitY(room.y, dir));
             path = new paper.Path();
@@ -370,7 +375,7 @@ class Renderer {
         }
 
         if (this.settings.isRound) {
-            triangle.scale(0.8, 0.8, new paper.Point(room.render.bounds.center))
+            triangle.scale(0.8, 0.8, new paper.Point(room.render.bounds.center));
         }
 
         return triangle;
@@ -402,24 +407,24 @@ class Renderer {
     }
 
     renderLabel(value) {
-        if (false && value.pixMap) { //TODO Not really sure how to deal with pixMap labels here so they are ok both in .svg and browser
-            let label = new paper.Raster("data:image/png;base64," + value.pixMap)
-            label._size.width = value.Width
-            label._size.height = value.Height
-            label.position = new paper.Point(value.X + value.Width / 2, value.Y)
-            label.scale(this.roomFactor * 0.08, -this.roomFactor * 0.08)
-
+        if (false && value.pixMap) {
+            //TODO Not really sure how to deal with pixMap labels here so they are ok both in .svg and browser
+            let label = new paper.Raster("data:image/png;base64," + value.pixMap);
+            label._size.width = value.Width;
+            label._size.height = value.Height;
+            label.position = new paper.Point(value.X + value.Width / 2, value.Y);
+            label.scale(this.roomFactor * 0.08, -this.roomFactor * 0.08);
         } else {
             let background = new paper.Path.Rectangle(new paper.Point(value.X, value.Y - value.Height), new paper.Size(value.Width, value.Height));
             background.fillColor = new paper.Color(value.BgColor.r / 255, value.BgColor.g / 255, value.BgColor.b / 255);
             let text = new paper.PointText(background.bounds.center.add(0, 0.04));
             text.fillColor = new paper.Color(value.FgColor.r / 255, value.FgColor.g / 255, value.FgColor.b / 255);
-            text.fontSize = 0.6
+            text.fontSize = 0.6;
             text.content = value.text;
-            text.fontFamily = 'Arial'
+            text.fontFamily = "Arial";
             text.justification = "center";
             text.locked = true;
-            text.scale(1, -1); 
+            text.scale(1, -1);
         }
     }
 
@@ -513,10 +518,10 @@ class Renderer {
         this.overlayLayer.activate();
         let room = this.area.getRoomById(id);
         let selection = new paper.Path.Rectangle(new paper.Point(room.x - 0.05, room.y - 0.05), new paper.Size(this.roomFactor + 0.1, this.roomFactor + 0.1));
-        selection.fillColor = new paper.Color(1,1,1,0);
-        selection.strokeWidth = 1
+        selection.fillColor = new paper.Color(1, 1, 1, 0);
+        selection.strokeWidth = 1;
         if (color === undefined) {
-            color = [0, 0.9, 0.7]
+            color = [0, 0.9, 0.7];
         }
         selection.strokeColor = new paper.Color(color[0], color[1], color[2]);
     }

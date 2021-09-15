@@ -11,7 +11,7 @@ html, body {
 
 body {
     padding: 10px;
-    background: #000;
+    background: #222;
     overflow: hidden;
 }
 
@@ -78,7 +78,7 @@ form {
 
 canvas {
     image-rendering: pixelated;
-    width: 48%;
+    width: 100%;
     height: 100%;
 
 }

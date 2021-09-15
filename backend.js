@@ -12,7 +12,7 @@ let reader = new MapReader(data, colors);
 let idLimits = 6295;
 
 let roomLimits = reader.roomIndex[idLimits];
-let area = reader.getAreaById(roomLimits.id);
+let area = reader.getAreaByRoomId(roomLimits.id);
 let scale = 30;
 let padding = 10
 let limit = false;

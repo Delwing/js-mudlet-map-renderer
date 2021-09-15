@@ -57,7 +57,7 @@ class MapReader {
         return candidateArea;
     }
 
-    getAreaById(id, limits) {
+    getAreaByRoomId(id, limits) {
         let room = this.getRoomById(id);
         return this.getArea(room.areaId, room.z, limits);
     }

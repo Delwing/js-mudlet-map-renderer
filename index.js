@@ -5,23 +5,65 @@ const MapReader = require("./map-fragment/reader/MapReader").MapReader;
 const urlSearchParams = new URLSearchParams(window.location.search);
 const params = Object.fromEntries(urlSearchParams.entries());
 
-let reader = new MapReader(mapData, colors);
-let area = reader.getArea(params.area, 0);
+class PageControls {
+    constructor(reader) {
+        jQuery("#map").on("roomSelected", (event) => this.selectRoom(event.detail));
+        jQuery("#map").on("roomDeselected", (event) => this.deselectRoom());
+        this.reader = reader;
+        this.select = jQuery("#area");
+        this.infoBox = jQuery(".info-box");
+    }
 
-let renderer = new Renderer(document.getElementById("map"), reader, area, reader.getColors(), 30, 10, 5);
-renderer.render();
-//renderer.controls.centerRoom(1111)
-//renderer.controls.setZoom(15)
+    renderArea(areaId, zIndex) {
+        let area = this.reader.getArea(areaId, zIndex);
+        this.renderer = new Renderer(document.getElementById("map"), this.reader, area, this.reader.getColors(), { grideSize: 2, roomSize: 1 });
+        this.renderer.render();
+        this.select.val(areaId);
+    }
 
-if (params.area2 !== undefined) {
-    let area2 = reader.getArea(params.area2 , 0) 
-    let renderer1 = new Renderer(document.getElementById("map2"), reader, area2, reader.getColors(), 30, 20, 5);
-    renderer1.render();
-    //renderer1.controls.centerRoom(1111)
-    //renderer1.controls.setZoom(15)
+    genericSetup() {
+        document.querySelectorAll(".btn").forEach((element) => element.addEventListener("click", () => element.blur()));
+    }
+
+    populateSelectBox() {
+        this.reader.getAreas().forEach((areaElement, index) => {
+            if (!areaElement.rooms.length) {
+                return;
+            }
+            this.select.append(new Option(areaElement.areaName, areaElement.areaId));
+        });
+        this.select.on("change", (event) => {
+            console.log(event.target);
+            this.renderArea(event.target.value, 0);
+        });
+    }
+
+    selectRoom(room) {
+        this.showRoomInfo(room);
+    }
+
+    deselectRoom(room) {
+        this.hideRoomInfo();
+    }
+
+    showRoomInfo(room) {
+        this.infoBox.toggle(true);
+        this.infoBox.find(".room-id").html(room.id);
+        this.infoBox.find(".room-name").html(room.name);
+        this.infoBox.find(".room-env").html(room.env);
+        this.infoBox.find(".coord-x").html(room.x);
+        this.infoBox.find(".coord-y").html(room.y);
+        this.infoBox.find(".coord-z").html(room.z);
+        this.infoBox.find(".room-hash").html("");
+        this.infoBox.find(".room-hash").html(room.hash);
+    }
+
+    hideRoomInfo() {
+        this.infoBox.toggle(false);
+    }
 }
 
-document.getElementById("map").addEventListener('roomClick', function(room) {
-    console.log(room)
-})
-
+let controls = new PageControls(new MapReader(mapData, colors));
+controls.genericSetup();
+controls.populateSelectBox();
+controls.renderArea(params.area, 0);

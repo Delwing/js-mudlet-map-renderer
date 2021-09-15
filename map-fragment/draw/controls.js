@@ -1,14 +1,40 @@
 const paper = require("paper");
 
+let selectionStyle = function(room) {
+    return {
+        strokeColor: new paper.Color(180 / 255, 93 / 255, 60 / 255, 0.9),
+        strokeWidth: 0.1,
+        fillColor: new paper.Color(new paper.Gradient([[room.fillColor, 0.38], new paper.Color(1, 1, 1)], false), room.bounds.topCenter, room.bounds.bottomCenter)
+    }
+}
+
+paper.Item.prototype.select = function(styleFunction) {
+    this.mapSelected = !this.mapSelected;
+    if (this.mapSelected) {
+        let style = styleFunction(this)
+        this.orgStyle = {}
+        for (const key in style) {
+            this.orgStyle[key] = this[key]
+        }
+        this.style = style;
+    } else {
+        console.log(this.orgStyle)
+        this.style = this.orgStyle
+    }
+}
+
 class Controls {
-    constructor(renderer, element, paperScope) {
+    constructor(renderer, reader, element, paperScope) {
         this.renderer = renderer;
+        this.reader = reader;
         this.element = element;
         this.scope = paperScope;
         this.view = paperScope.view;
         this.element.onwheel = (event) => this.zoom(event);
         this.activateDrag();
-        this.element.addEventListener("roomClick", this.selectRoom);
+        this.element.addEventListener("roomClick", (event) => this.selectRoom(event.detail));
+        this.element.addEventListener("backgroundClick", () => this.deselectRoom());
+
 
         let bounds = this.renderer.getBounds();
 
@@ -35,7 +61,7 @@ class Controls {
     }
 
     setZoom(value) {
-        this.view.zoom = value
+        this.view.zoom = value;
     }
 
     activateDrag() {
@@ -55,35 +81,38 @@ class Controls {
         toolPan.onMouseDown = () => {
             this.isDrag = false;
         };
-        toolPan.onMouseUp = (event) => {
+        toolPan.onMouseUp = () => {
             this.isDrag = false;
             this.element.style.cursor = "default";
         };
     }
 
-    selectRoom(event) {
-        // if (this.selected !== undefined) {
-        //     this.selected.exitsRenders.forEach((render) => (  render.style = {
-        //         strokeColor: "white",
-        //         strokeWidth: 1,
-        //     }));
-        // }
-        // let room = event.detail;
-        // room.exitsRenders.forEach((render) => {
-        //     render.style = {
-        //         strokeColor: "red",
-        //         strokeWidth: 1,
-        //     };
-        // });
-        // this.selected = room;
+    selectRoom(room) {
+        this.deselectRoom()
+        this.renderer.renderPosition(room.id)
+        room.render.select(selectionStyle)
+        room.exitsRenders.forEach(render => render.select(selectionStyle));
+        this.selected = room;
+
+        this.element.dispatchEvent(new CustomEvent("roomSelected", {detail: room}))
+    }
+
+    deselectRoom() {
+        if (this.selected !== undefined) {
+            this.selected.render.select();
+            this.selected.exitsRenders.forEach(render => render.select());
+            delete this.selected
+            this.element.dispatchEvent(new CustomEvent("roomDeselected"))
+        }
     }
 
     centerRoom(id) {
-        let room = this.renderer.area.getRoomById(id)
+        let room = this.renderer.area.getRoomById(id);
         if (room !== undefined) {
-            this.view.center = room.render.position
+            this.view.center = room.render.position;
         }
     }
+
 }
 
 module.exports = {
