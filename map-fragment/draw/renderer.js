@@ -7,8 +7,8 @@ const padding = 1;
 class Settings {
     isRound = false;
     scale = 55;
-    gridSize = 10;
-    roomSize = 5;
+    gridSize = 2;
+    roomSize = 1;
     renderLabels = true;
     borders = false;
     frameMode = false;
@@ -36,7 +36,7 @@ class Renderer {
         this.roomFactor = this.roomSize / this.baseSize;
         this.exitFactor = this.roomFactor * 2;
         this.roomDiagonal = this.roomFactor * Math.sqrt(2);
-        this.ladders = ["up", "down"];
+        this.ladders = ["up", "down", "u", "d"];
         this.paper = new paper.PaperScope();
         if (element == undefined) {
             let bounds = this.area.getAreaBounds();
@@ -146,8 +146,8 @@ class Renderer {
             this.renderCustomLine(room, dir);
         }
 
-        for (let dir in room.stubs) {
-            this.renderStub(room, dirNumbers[room.stubs[dir]]);
+        for (let dir in room.exitStubs) {
+            this.renderStub(room, dirNumbers[room.exitStubs[dir]]);
         }
 
         this.renderChar(room);
@@ -331,18 +331,24 @@ class Renderer {
     renderStub(room, dir) {
         this.linkLayer.activate();
         let startPoint = new paper.Point(room.x + 0.25, room.y + 0.25);
-        let exitPoint = new paper.Point(this.getExitX(room.x, dir), this.getExitY(room.y, dir));
-        let path = new paper.Path();
-        path.moveTo(startPoint);
-        path.lineTo(exitPoint);
-        path.pivot = startPoint;
-        path.position = exitPoint;
-        path.strokeWidth = 1 * this.roomFactor;
-        path.strokeColor = this.defualtColor;
+        let path;
+        if (this.ladders.indexOf(dir) > -1) {
+            path = this.renderLadder(room, dir, true)
+        } else {
+            let exitPoint = new paper.Point(this.getExitX(room.x, dir), this.getExitY(room.y, dir));
+            path = new paper.Path();
+            path.moveTo(startPoint);
+            path.lineTo(exitPoint);
+            path.pivot = startPoint;
+            path.position = exitPoint;
+            path.strokeWidth = 1 * this.roomFactor;
+            path.strokeColor = this.defualtColor;
+            path;
+        }
         return path;
     }
 
-    renderLadder(room, direction) {
+    renderLadder(room, direction, stub = false) {
         this.labelsLayer.activate();
         let triangle = new paper.Path.RegularPolygon(
             new paper.Point(room.render.bounds.bottomCenter).subtract(new paper.Point(0, 0.2 * this.roomFactor)),
@@ -352,13 +358,19 @@ class Renderer {
         triangle.scale(1, 0.75);
         let baseColor = this.lightnessDependantColor(room);
         triangle.strokeWidth = 1 * this.roomFactor;
-        triangle.fillColor = new paper.Color(baseColor, baseColor, baseColor, 0.75);
+        if (!stub) {
+            triangle.fillColor = new paper.Color(baseColor, baseColor, baseColor, 0.75);
+        }
         triangle.strokeColor = new paper.Color(baseColor, baseColor, baseColor);
 
         triangle.bringToFront();
 
-        if (direction === "up") {
+        if (direction === "up" || direction === "u") {
             triangle.rotate(180, new paper.Point(room.render.bounds.center));
+        }
+
+        if (this.settings.isRound) {
+            triangle.scale(0.8, 0.8, new paper.Point(room.render.bounds.center))
         }
 
         return triangle;
@@ -390,16 +402,25 @@ class Renderer {
     }
 
     renderLabel(value) {
-        let background = new paper.Path.Rectangle(new paper.Point(value.X, value.Y - value.Height), new paper.Size(value.Width, value.Height));
-        background.fillColor = new paper.Color(value.BgColor.r / 255, value.BgColor.g / 255, value.BgColor.b / 255);
-        let text = new paper.PointText(background.bounds.center.add(0, 0.04));
-        text.fillColor = new paper.Color(value.FgColor.r / 255, value.FgColor.g / 255, value.FgColor.b / 255);
-        text.fontSize = 0.6
-        text.content = value.text;
-        text.fontFamily = 'Arial'
-        text.justification = "center";
-        text.locked = true;
-        text.scale(1, -1);
+        if (false && value.pixMap) { //TODO Not really sure how to deal with pixMap labels here so they are ok both in .svg and browser
+            let label = new paper.Raster("data:image/png;base64," + value.pixMap)
+            label._size.width = value.Width
+            label._size.height = value.Height
+            label.position = new paper.Point(value.X + value.Width / 2, value.Y)
+            label.scale(this.roomFactor * 0.08, -this.roomFactor * 0.08)
+
+        } else {
+            let background = new paper.Path.Rectangle(new paper.Point(value.X, value.Y - value.Height), new paper.Size(value.Width, value.Height));
+            background.fillColor = new paper.Color(value.BgColor.r / 255, value.BgColor.g / 255, value.BgColor.b / 255);
+            let text = new paper.PointText(background.bounds.center.add(0, 0.04));
+            text.fillColor = new paper.Color(value.FgColor.r / 255, value.FgColor.g / 255, value.FgColor.b / 255);
+            text.fontSize = 0.6
+            text.content = value.text;
+            text.fontFamily = 'Arial'
+            text.justification = "center";
+            text.locked = true;
+            text.scale(1, -1); 
+        }
     }
 
     lightnessDependantColor(room) {

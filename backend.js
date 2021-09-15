@@ -14,7 +14,7 @@ let idLimits = 6295;
 let roomLimits = reader.roomIndex[idLimits];
 let area = reader.getAreaById(roomLimits.id);
 let scale = 30;
-let padding = 5
+let padding = 10
 let limit = false;
 
 let renderer = new Renderer(null, reader, area, reader.getColors(), {scale: scale, roomSize: 1, gridSize: 2, renderLabels: true});
