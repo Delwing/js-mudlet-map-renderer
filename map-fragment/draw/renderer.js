@@ -429,7 +429,11 @@ class Renderer {
             let size = 0.85 * this.roomFactor;
             let x = this.pngRender ? room.render.position.x - 0.1 : room.render.position.x;
             let text = new paper.PointText(x, room.render.position.y + size / 4);
-            text.fillColor = this.lightnessDependantColor(room);
+            if (room.userData["system.fallback_symbol_color"] === undefined) {
+                text.fillColor = this.lightnessDependantColor(room);
+            } else {
+                text.fillColor = room.userData["system.fallback_symbol_color"]
+            }
             text.fontSize = size;
             text.content = room.roomChar;
             text.justification = "center";
