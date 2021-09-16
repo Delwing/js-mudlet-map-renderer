@@ -24,7 +24,7 @@ class PageControls {
         this.map.on("roomSelected", (event) => this.selectRoom(event.detail));
         this.map.on("roomDeselected", () => this.deselectRoom());
         this.map.on("zoom", (event) => this.adjustZoomBar(event.detail));
-        this.map.on("goToArea", (event) => setTimeout(() => this.renderArea(event.detail.area, event.detail.z), 0.1));
+        this.map.on("goToArea", (event) => setTimeout(() => this.renderArea(event.detail.areaId, event.detail.z), 0.1));
         this.reader = reader;
         this.select = jQuery("#area");
         this.infoBox = jQuery(".info-box");
@@ -85,7 +85,7 @@ class PageControls {
         });
 
         jQuery(window).on("resize", () => {
-            this.render()
+            this.render();
         });
 
         jQuery("body").on("click", "[data-room]", (event) => {
@@ -128,7 +128,6 @@ class PageControls {
 
     renderArea(areaId, zIndex) {
         let area = this.reader.getArea(areaId, zIndex);
-        console.log(area)
         if (this.renderer) {
             this.renderer.clear();
         }
@@ -285,7 +284,7 @@ class PageControls {
         let areaLink = "";
         let destRoom = this.reader.getRoomById(id);
         if (destRoom.area !== this.renderer.area.areaId) {
-            let area = this.reader.getAreaProperties(destRoom.area);
+            let area = this.reader.getAreaProperties(destRoom.areaId);
             areaLink = " ->  " + '<a href="#" data-room="' + destRoom.id + '">' + area.areaName + "</a>";
         }
         return "<li>" + this.translateDir(exit) + " : " + '<a href="#" data-room="' + id + '">' + id + "</a>" + areaLink + "</li>";
@@ -377,8 +376,6 @@ class PageControls {
                 event.preventDefault();
             }
 
-            console.log(event)
-
             if (event.ctrlKey && event.key === "KeyF") {
                 event.preventDefault();
                 this.showSearch();
@@ -425,18 +422,26 @@ class PageControls {
     }
 
     showHelp() {
-        this.helpModal.modal('show');
+        this.helpModal.modal("show");
     }
 
     showSearch() {
-        this.searchModal.modal('show');
+        this.searchModal.modal("show");
     }
 }
 
 let controls = new PageControls(new MapReader(mapData, colors));
 controls.genericSetup();
 controls.populateSelectBox();
-controls.renderArea(params.area, 0);
+let area;
+if (params.area) {
+    area = params.area;
+} else if (typeof position !== "undefined" && position.area) {
+    area = position.area;
+} else {
+    area = 1;
+}
+controls.renderArea(area, 0);
 controls.registerKeyBoard();
 
 let dirs = {

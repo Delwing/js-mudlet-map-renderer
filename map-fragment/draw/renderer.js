@@ -429,7 +429,7 @@ class Renderer {
             let size = 0.85 * this.roomFactor;
             let x = this.pngRender ? room.render.position.x - 0.1 : room.render.position.x;
             let text = new paper.PointText(x, room.render.position.y + size / 4);
-            if (room.userData["system.fallback_symbol_color"] === undefined) {
+            if (!room.userData || room.userData["system.fallback_symbol_color"] === undefined) {
                 text.fillColor = this.lightnessDependantColor(room);
             } else {
                 text.fillColor = room.userData["system.fallback_symbol_color"]
@@ -476,7 +476,7 @@ class Renderer {
             let text = new paper.PointText(background.bounds.center.add(0, 0.04));
             text.fillColor = new paper.Color(value.FgColor.r / 255, value.FgColor.g / 255, value.FgColor.b / 255);
             text.fontSize = 0.75;
-            text.content = value.text;
+            text.content = value.Text;
             text.fontFamily = "Arial";
             text.justification = "center";
             text.locked = true;

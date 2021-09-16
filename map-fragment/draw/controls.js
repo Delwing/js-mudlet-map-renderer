@@ -128,7 +128,6 @@ class Controls {
 
     goToRoomArea(id) {
         let destRoom = this.reader.getRoomById(id);
-        console.log(destRoom)
         this.element.dispatchEvent(new CustomEvent("goToArea", { detail: destRoom }));
     }
 
