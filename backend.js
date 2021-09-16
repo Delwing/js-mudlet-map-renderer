@@ -17,7 +17,7 @@ let scale = 30;
 let padding = 10
 let limit = false;
 
-let renderer = new Renderer(null, reader, area, reader.getColors(), {scale: scale, roomSize: 1, gridSize: 2, renderLabels: true});
+let renderer = new Renderer(null, reader, area, reader.getColors(), {scale: scale});
 renderer.render();
 renderer.renderSelection(idLimits);
 renderer.renderPosition(idLimits)

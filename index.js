@@ -24,6 +24,7 @@ class PageControls {
         this.map.on("roomSelected", (event) => this.selectRoom(event.detail));
         this.map.on("roomDeselected", () => this.deselectRoom());
         this.map.on("zoom", (event) => this.adjustZoomBar(event.detail));
+        this.map.on("goToArea", (event) => setTimeout(() => this.renderArea(event.detail.area, event.detail.z), 0.1));
         this.reader = reader;
         this.select = jQuery("#area");
         this.infoBox = jQuery(".info-box");
@@ -84,7 +85,7 @@ class PageControls {
         });
 
         jQuery(window).on("resize", () => {
-            //that.redraw()
+            this.render()
         });
 
         jQuery("body").on("click", "[data-room]", (event) => {
@@ -127,6 +128,7 @@ class PageControls {
 
     renderArea(areaId, zIndex) {
         let area = this.reader.getArea(areaId, zIndex);
+        console.log(area)
         if (this.renderer) {
             this.renderer.clear();
         }
@@ -377,7 +379,7 @@ class PageControls {
 
             console.log(event)
 
-            if (event.ctrlKey && event.code === "KeyF") {
+            if (event.ctrlKey && event.key === "KeyF") {
                 event.preventDefault();
                 this.showSearch();
             }

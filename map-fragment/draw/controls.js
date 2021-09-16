@@ -39,6 +39,7 @@ class Controls {
         this.activateDrag();
         this.renderer.emitter.addEventListener("roomClick", (event) => this.selectRoom(event.detail));
         this.renderer.emitter.addEventListener("backgroundClick", () => this.deselectRoom());
+        this.renderer.emitter.addEventListener("areaArrowClick", (event) => this.goToRoomArea(event.detail));
 
         let bounds = this.renderer.getBounds();
 
@@ -92,7 +93,7 @@ class Controls {
     }
 
     selectRoom(room) {
-        if(this.isDrag) {
+        if (this.isDrag) {
             return false;
         }
         this.deselectRoom();
@@ -105,7 +106,7 @@ class Controls {
     }
 
     deselectRoom() {
-        if(this.isDrag) {
+        if (this.isDrag) {
             return false;
         }
         this.renderer.clearPosition();
@@ -125,8 +126,14 @@ class Controls {
         }
     }
 
+    goToRoomArea(id) {
+        let destRoom = this.reader.getRoomById(id);
+        console.log(destRoom)
+        this.element.dispatchEvent(new CustomEvent("goToArea", { detail: destRoom }));
+    }
+
     move(x, y) {
-        this.view.scrollBy(new paper.Point(x * 50, y * 50))
+        this.view.scrollBy(new paper.Point(x * 50, y * 50));
     }
 }
 

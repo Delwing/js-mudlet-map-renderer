@@ -2,7 +2,7 @@ const paper = require("paper");
 const MapReader = require("../reader/MapReader").MapReader;
 const Controls = require("./controls").Controls;
 
-const paddingFactor = 15;
+const padding = 7;
 const gridSize = 20;
 
 class Colors {
@@ -60,7 +60,7 @@ class Renderer {
         this.paper = new paper.PaperScope();
         if (element == undefined) {
             let bounds = this.area.getAreaBounds();
-            element = new paper.Size((bounds.width + paddingFactor * 2) * this.scale, (bounds.height + paddingFactor * 2) * this.scale);
+            element = new paper.Size((bounds.width + padding * 2) * this.scale, (bounds.height + padding * 2) * this.scale);
             this.isVisual = false;
         } else {
             this.isVisual = true;
@@ -83,7 +83,6 @@ class Renderer {
     render(pngRender = false) {
         this.pngRender = pngRender;
         let bounds = this.area.getAreaBounds();
-        let padding = paddingFactor * this.roomFactor;
         this.renderBackground(bounds.minX - padding, bounds.minY - padding, bounds.maxX + padding, bounds.maxY + padding);
         this.renderHeader();
         this.area.rooms
@@ -188,7 +187,6 @@ class Renderer {
     }
 
     renderLink(room, targetId, dir) {
-        
         let exitKey = new Array(room.id, targetId).sort().join("#");
         if (this.exitsRendered[exitKey]) {
             return;
@@ -220,6 +218,7 @@ class Renderer {
             path.rotate(180, exitPoint);
             path.scale(2);
             path.pointerReactor(this.element);
+            path.registerClick(() => this.emitter.dispatchEvent(new CustomEvent("areaArrowClick", { detail: targetId })));
         }
 
         if (room.doors[dirLongToShort(dir)] !== undefined) {
@@ -259,7 +258,7 @@ class Renderer {
             path.scale(1, exitPoint);
             path.rotate(180, exitPoint);
         }
-        
+
         room.exitsRenders.push(path);
         if (targetRoom) {
             targetRoom.exitsRenders = targetRoom.exitsRenders != "undefined" ? targetRoom.exitsRenders : [];
@@ -328,7 +327,7 @@ class Renderer {
         path.strokeWidth = this.exitFactor;
         path.orgStrokeColor = path.strokeColor;
 
-        room.exitsRenders.push(customLine)
+        room.exitsRenders.push(customLine);
 
         return customLine;
     }
