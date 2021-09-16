@@ -124,6 +124,10 @@ class Controls {
             this.selectRoom(room);
         }
     }
+
+    move(x, y) {
+        this.view.scrollBy(new paper.Point(x * 50, y * 50))
+    }
 }
 
 module.exports = {

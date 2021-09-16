@@ -3,6 +3,7 @@ const MapReader = require("../reader/MapReader").MapReader;
 const Controls = require("./controls").Controls;
 
 const paddingFactor = 15;
+const gridSize = 20;
 
 class Colors {
     static OPEN_DOOR = new paper.Color(10 / 255, 155 / 255, 10 / 255);
@@ -13,8 +14,8 @@ class Colors {
 class Settings {
     isRound = false;
     scale = 55;
-    gridSize = 2;
-    roomSize = 1;
+    roomSize = 10;
+    exitsSize = 2;
     borders = false;
     frameMode = false;
     areaName = true;
@@ -52,8 +53,8 @@ class Renderer {
         this.scale = this.settings.scale;
         this.grideSize = this.settings.gridSize;
         this.roomSize = this.settings.roomSize;
-        this.roomFactor = this.roomSize / this.grideSize;
-        this.exitFactor = this.roomFactor * 0.05;
+        this.roomFactor = this.roomSize / gridSize;
+        this.exitFactor = this.settings.exitsSize * 0.01;
         this.roomDiagonal = this.roomFactor * Math.sqrt(2);
         this.ladders = ["up", "down", "u", "d"];
         this.paper = new paper.PaperScope();

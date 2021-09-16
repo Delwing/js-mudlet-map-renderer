@@ -31,8 +31,8 @@ class PageControls {
         this.saveImageButton = jQuery(".save-image");
         this.copyImageButton = jQuery(".copy-image");
         this.zoomButton = jQuery(".zoom-controls .btn");
-        this.toastContainer = jQuery('.toast');
-        this.searchModal = jQuery('#search');
+        this.toastContainer = jQuery(".toast");
+        this.searchModal = jQuery("#search");
         this.search = jQuery(".search-form");
         this.helpModal = jQuery("#help");
         this.zoomBar = jQuery(".progress-container");
@@ -69,12 +69,11 @@ class PageControls {
             this.submitSearch(event);
         });
 
-        this.searchModal.on('shown.bs.modal', () => {
+        this.searchModal.on("shown.bs.modal", () => {
             this.searchModal.find("input").first().focus();
         });
-        
 
-        this.settingsModal.on('shown.bs.modal', () => {
+        this.settingsModal.on("shown.bs.modal", () => {
             this.populateSettings();
             this.settingsModal.find("input").first().focus();
         });
@@ -95,7 +94,7 @@ class PageControls {
     }
 
     handleSaveSettings() {
-        let inputs = this.settingsModal.find('input');
+        let inputs = this.settingsModal.find("input");
 
         let formData = {};
         inputs.each((index, element) => {
@@ -113,17 +112,17 @@ class PageControls {
         Object.assign(this.settings, formData);
 
         this.showToast("Zapisano ustawienia");
-        this.settingsModal.modal('toggle');
+        this.settingsModal.modal("toggle");
         this.saveSettings();
         this.render();
     }
 
     saveSettings() {
-        localStorage.setItem("settings", JSON.stringify(this.settings))
+        localStorage.setItem("settings", JSON.stringify(this.settings));
     }
 
     render() {
-        this.renderArea(this.select.val(), this.zIndex)
+        this.renderArea(this.select.val(), this.zIndex);
     }
 
     renderArea(areaId, zIndex) {
@@ -187,24 +186,24 @@ class PageControls {
     }
 
     submitSearch() {
-        this.searchModal.modal('toggle');
-        let inputs = this.search.find(':input');
+        this.searchModal.modal("toggle");
+        let inputs = this.search.find(":input");
 
         let formData = {};
         inputs.each((index, element) => {
             formData[element.name] = jQuery(element).val();
-            jQuery(element).val("")
+            jQuery(element).val("");
         });
 
         if (formData.roomId !== undefined) {
-            this.findRoom(parseInt(formData.roomId))
+            this.findRoom(parseInt(formData.roomId));
         }
     }
 
     findRoom(id) {
-        let area = this.reader.getAreaByRoomId(id)
+        let area = this.reader.getAreaByRoomId(id);
         if (area !== undefined) {
-            this.renderArea(area.areaId, area.zIndex)
+            this.renderArea(area.areaId, area.zIndex);
             this.renderer.controls.setZoom(1);
             this.renderer.controls.centerRoom(id);
         } else {
@@ -215,7 +214,7 @@ class PageControls {
     adjustZoomBar(view) {
         let percentage = (view.zoom - view.minZoom) / (10 - view.minZoom);
 
-        this.zoomBar.find(".progress-bar").css("width", (percentage * 100) + "%");
+        this.zoomBar.find(".progress-bar").css("width", percentage * 100 + "%");
         let that = this;
         if (!this.zoomBar.is(":visible")) {
             this.zoomBar.fadeIn();
@@ -228,7 +227,7 @@ class PageControls {
                 this.progressTimeout = undefined;
             }
             this.progressTimeout = setTimeout(function () {
-                that.zoomBar.fadeOut('slow');
+                that.zoomBar.fadeOut("slow");
             }, 3000);
         }
     }
@@ -290,10 +289,9 @@ class PageControls {
         return "<li>" + this.translateDir(exit) + " : " + '<a href="#" data-room="' + id + '">' + id + "</a>" + areaLink + "</li>";
     }
 
-    
     showToast(text) {
         this.toastContainer.find(".toast-body").html(text);
-        this.toastContainer.toast('show')
+        this.toastContainer.toast("show");
     }
 
     translateDir(dir) {
@@ -329,39 +327,37 @@ class PageControls {
 
     copyImage() {
         if (typeof ClipboardItem !== "undefined") {
-            this.map[0].toBlob(blob => navigator.clipboard.write([new ClipboardItem({'image/png': blob})]));
-            this.showToast(translateString("Skopiowano do schowka"))
+            this.map[0].toBlob((blob) => navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]));
+            this.showToast(translateString("Skopiowano do schowka"));
         } else {
-            this.showToast("Twoja przeglądarka nie wspiera kopiowania do schowka")
+            this.showToast("Twoja przeglądarka nie wspiera kopiowania do schowka");
         }
-        this.toastContainer.toast('show')
+        this.toastContainer.toast("show");
     }
 
     move(x, y) {
-        return;
+        this.renderer.controls.move(x, y);
     }
 
     goDirection(directionKey) {
         let fullDirection = dirsShortToLong(directionKey);
         if (this.renderer.controls.selected) {
             this.findRoom(this.renderer.controls.selected.exits[fullDirection]);
-
         }
     }
 
-
     registerKeyBoard() {
         let directionKeys = {
-            "Numpad1": 'sw',
-            "Numpad2": 's',
-            "Numpad3": 'se',
-            "Numpad4": 'w',
-            "Numpad6": 'e',
-            "Numpad7": 'nw',
-            "Numpad8": 'n',
-            "Numpad9": 'ne',
-            "NumpadMultiply": 'u',
-            "NumpadDivide": 'd',
+            Numpad1: "sw",
+            Numpad2: "s",
+            Numpad3: "se",
+            Numpad4: "w",
+            Numpad6: "e",
+            Numpad7: "nw",
+            Numpad8: "n",
+            Numpad9: "ne",
+            NumpadMultiply: "u",
+            NumpadDivide: "d",
         };
 
         window.addEventListener("keydown", (event) => {
@@ -370,8 +366,8 @@ class PageControls {
             }
 
             if (event.code === "F1") {
-                this.showHelp();
                 event.preventDefault();
+                this.showHelp();
             }
 
             if (directionKeys.hasOwnProperty(event.code)) {
@@ -379,18 +375,19 @@ class PageControls {
                 event.preventDefault();
             }
 
-            if (event.ctrlKey && event.key === "KeyF") {
-                this.showSearch();
+            console.log(event)
+
+            if (event.ctrlKey && event.code === "KeyF") {
                 event.preventDefault();
+                this.showSearch();
             }
         });
-
 
         window.addEventListener("keydown", (event) => {
             if (jQuery("input").is(":focus")) {
                 return;
             }
-           
+
             if (event.ctrlKey && event.code === "KeyS") {
                 this.saveImage();
                 event.preventDefault();
@@ -424,25 +421,33 @@ class PageControls {
             }
         });
     }
+
+    showHelp() {
+        this.helpModal.modal('show');
+    }
+
+    showSearch() {
+        this.searchModal.modal('show');
+    }
 }
 
 let controls = new PageControls(new MapReader(mapData, colors));
 controls.genericSetup();
 controls.populateSelectBox();
 controls.renderArea(params.area, 0);
-controls.registerKeyBoard()
+controls.registerKeyBoard();
 
 let dirs = {
-    "north": "n",
-    "south": "s",
-    "east": "e",
-    "west": "w",
-    "northeast": "ne",
-    "northwest": "nw",
-    "southeast": "se",
-    "southwest": "sw",
-    "up": "u",
-    "down": "d",
+    north: "n",
+    south: "s",
+    east: "e",
+    west: "w",
+    northeast: "ne",
+    northwest: "nw",
+    southeast: "se",
+    southwest: "sw",
+    up: "u",
+    down: "d",
 };
 
 function getKeyByValue(obj, val) {
