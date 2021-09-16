@@ -9,7 +9,7 @@ let data = mapData;
 
 let reader = new MapReader(data, colors);
 
-let idLimits = 6295;
+let idLimits = 25732;
 
 let roomLimits = reader.roomIndex[idLimits];
 let area = reader.getAreaByRoomId(roomLimits.id);
@@ -18,9 +18,9 @@ let padding = 10
 let limit = false;
 
 let renderer = new Renderer(null, reader, area, reader.getColors(), {scale: scale, roomSize: 1, gridSize: 2, renderLabels: true});
+renderer.render();
 renderer.renderSelection(idLimits);
 renderer.renderPosition(idLimits)
-renderer.render();
 let bounds
 if (!limit) {
     bounds = 'content';

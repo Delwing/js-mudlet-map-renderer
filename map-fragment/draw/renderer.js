@@ -1,18 +1,38 @@
-let MapReader = require("../reader/MapReader").MapReader;
 const paper = require("paper");
-let Controls = require("./controls").Controls;
+const MapReader = require("../reader/MapReader").MapReader;
+const Controls = require("./controls").Controls;
 
-const padding = 1;
+const paddingFactor = 15;
+
+class Colors {
+    static OPEN_DOOR = new paper.Color(10 / 255, 155 / 255, 10 / 255);
+    static CLOSED_DOOR = new paper.Color(226 / 255, 205 / 255, 59 / 255);
+    static LOCKED_DOOR = new paper.Color(155 / 255, 10 / 255, 10 / 255);
+}
 
 class Settings {
     isRound = false;
     scale = 55;
     gridSize = 2;
     roomSize = 1;
-    renderLabels = true;
     borders = false;
     frameMode = false;
+    areaName = true;
+    showLabels = true;
 }
+
+paper.Item.prototype.registerClick = function (callback) {
+    if (typeof document !== "undefined") {
+        this.onClick = callback;
+    }
+};
+
+paper.Item.prototype.pointerReactor = function (element) {
+    if (typeof document !== "undefined") {
+        this.onMouseEnter = () => (element.style.cursor = "pointer");
+        this.onMouseLeave = () => (element.style.cursor = "default");
+    }
+};
 
 class Renderer {
     /**
@@ -30,20 +50,20 @@ class Renderer {
         this.area = area;
         this.colors = colors;
         this.scale = this.settings.scale;
-        this.baseSize = this.settings.gridSize;
+        this.grideSize = this.settings.gridSize;
         this.roomSize = this.settings.roomSize;
-        this.renderLabels = this.settings.renderLabels;
-        this.roomFactor = this.roomSize / this.baseSize;
-        this.exitFactor = this.roomFactor * 2;
+        this.roomFactor = this.roomSize / this.grideSize;
+        this.exitFactor = this.roomFactor * 0.05;
         this.roomDiagonal = this.roomFactor * Math.sqrt(2);
         this.ladders = ["up", "down", "u", "d"];
         this.paper = new paper.PaperScope();
         if (element == undefined) {
             let bounds = this.area.getAreaBounds();
-            element = new paper.Size((bounds.width + padding * 2) * this.scale, (bounds.height + padding * 2) * this.scale);
+            element = new paper.Size((bounds.width + paddingFactor * 2) * this.scale, (bounds.height + paddingFactor * 2) * this.scale);
             this.isVisual = false;
         } else {
             this.isVisual = true;
+            this.emitter = new EventTarget();
         }
         this.paper.setup(element);
         this.element = element;
@@ -62,13 +82,15 @@ class Renderer {
     render(pngRender = false) {
         this.pngRender = pngRender;
         let bounds = this.area.getAreaBounds();
-        let padding = 0.10 * this.scale;
+        let padding = paddingFactor * this.roomFactor;
         this.renderBackground(bounds.minX - padding, bounds.minY - padding, bounds.maxX + padding, bounds.maxY + padding);
         this.renderHeader();
-        this.area.rooms.forEach((value) => {
-            this.renderRoom(value);
-        });
-        if (this.area.labels !== undefined && this.renderLabels) {
+        this.area.rooms
+            .filter((room) => room.z == this.area.zIndex)
+            .forEach((room) => {
+                this.renderRoom(room);
+            });
+        if (this.area.labels !== undefined && this.settings.showLabels) {
             this.bgLabels.activate();
             this.area.labels.forEach((value) => this.renderLabel(value), this);
         }
@@ -83,6 +105,7 @@ class Renderer {
         let bounds = this.area.getAreaBounds();
         let padding = 1 * this.scale;
         this.paper.project.layers.forEach((layer) => {
+            layer.applyMatrix = false;
             layer.matrix = new paper.Matrix(1, 0, 0, -1, -bounds.minX + padding, bounds.maxY + padding).scale(
                 this.scale,
                 new paper.Point(bounds.minX, bounds.maxY)
@@ -94,21 +117,21 @@ class Renderer {
         this.backgroundLayer.activate();
         let background = new paper.Path.Rectangle(new paper.Point(x1, y1), new paper.Point(x2, y2));
         background.fillColor = new paper.Color(0, 0, 0);
-        if (this.isVisual) {
-            background.onClick = () => {
-                this.element.dispatchEvent(new CustomEvent("backgroundClick"))
-            }
-        }
+        background.registerClick(() => {
+            this.emitter.dispatchEvent(new CustomEvent("backgroundClick"));
+        });
     }
 
     renderHeader() {
-        this.backgroundLayer.activate();
-        let bounds = this.getBounds();
-        let header = new paper.PointText(bounds.x + 2.5, bounds.y + bounds.height - 2.5);
-        header.fillColor = new paper.Color(1, 1, 1, 1);
-        header.fontSize = 2.5;
-        header.content = this.area.areaName;
-        header.scale(1, -1);
+        if (this.settings.areaName) {
+            this.backgroundLayer.activate();
+            let bounds = this.getBounds();
+            let header = new paper.PointText(bounds.x + 2.5, bounds.y + bounds.height - 2.5);
+            header.fillColor = new paper.Color(1, 1, 1, 1);
+            header.fontSize = 2.5;
+            header.content = this.area.areaName;
+            header.scale(1, -1);
+        }
     }
 
     renderRoom(room) {
@@ -157,15 +180,14 @@ class Renderer {
 
         this.renderChar(room);
 
-        if (this.isVisual) {
-            this.pointerReactor(roomShape);
-            roomShape.onClick = () => {
-                this.element.dispatchEvent(new CustomEvent("roomClick", { detail: room }));
-            };
-        }
+        roomShape.pointerReactor(this.element);
+        roomShape.registerClick(() => {
+            this.emitter.dispatchEvent(new CustomEvent("roomClick", { detail: room }));
+        });
     }
 
     renderLink(room, targetId, dir) {
+        
         let exitKey = new Array(room.id, targetId).sort().join("#");
         if (this.exitsRendered[exitKey]) {
             return;
@@ -182,10 +204,10 @@ class Renderer {
             if (!isOneWay) {
                 path.moveTo(exitPoint);
                 path.lineTo(secondPoint);
-                path.strokeWidth = 1 * this.roomFactor;
+                path.strokeWidth = this.exitFactor;
                 path.strokeColor = this.defualtColor;
             } else {
-                this.renderArrow(exitPoint, secondPoint, this.defualtColor, [], 1, this.defualtColor, true);
+                this.renderArrow(exitPoint, secondPoint, this.defualtColor, [], this.exitFactor, this.defualtColor, true);
             }
         } else {
             secondPoint = new paper.Point(room.x + this.roomFactor / 2, room.y + this.roomFactor / 2);
@@ -193,12 +215,14 @@ class Renderer {
             if (color === undefined) {
                 color = [114, 1, 0];
             }
-            path = this.renderArrow(exitPoint, secondPoint, new paper.Color(color[0] / 255, color[1] / 255, color[2] / 255), [], 1);
+            path = this.renderArrow(exitPoint, secondPoint, new paper.Color(color[0] / 255, color[1] / 255, color[2] / 255), [], this.exitFactor);
             path.rotate(180, exitPoint);
+            path.scale(2);
+            path.pointerReactor(this.element);
         }
 
         if (room.doors[dirLongToShort(dir)] !== undefined) {
-            this.renderDoors(exitPoint, secondPoint);
+            this.renderDoors(exitPoint, secondPoint, room.doors[dirLongToShort(dir)]);
         }
 
         this.exitsRendered[exitKey] = true;
@@ -207,6 +231,7 @@ class Renderer {
             targetRoom.exitsRenders = targetRoom.exitsRenders != undefined ? targetRoom.exitsRenders : [];
             targetRoom.exitsRenders.push(path);
         }
+
         return path;
     }
 
@@ -228,20 +253,18 @@ class Renderer {
             path.strokeWidth = 1;
         } else {
             secondPoint = new paper.Point(room.x + this.roomFactor / 2, room.y + this.roomFactor / 2);
-            path = this.renderArrow(exitPoint, secondPoint, this.defualtColor, [], 1);
+            path = this.renderArrow(exitPoint, secondPoint, this.defualtColor, [], this.exitFactor);
             path.strokeColor = this.defualtColor;
             path.scale(1, exitPoint);
             path.rotate(180, exitPoint);
         }
-
-        if (room.doors[dirLongToShort(dir)] !== undefined) {
-            this.renderDoors(exitPoint, secondPoint);
-        }
+        
         room.exitsRenders.push(path);
         if (targetRoom) {
             targetRoom.exitsRenders = targetRoom.exitsRenders != "undefined" ? targetRoom.exitsRenders : [];
             targetRoom.exitsRenders.push(path);
         }
+
         return path;
     }
 
@@ -257,9 +280,10 @@ class Renderer {
         let path = new paper.Path();
         let style = room.customLines[dir].attributes.style;
         if (style === "dot line") {
-            path.dashArray = [1, 1];
+            path.dashArray = [0.05, 0.05];
+            path.dashOffset = 0.1;
         } else if (style === "dash line") {
-            path.dashArray = [4, 2];
+            path.dashArray = [0.4, 0.2];
         } else if (style === "solid line") {
         } else {
             console.log("Brak opisu stylu: " + style);
@@ -300,9 +324,12 @@ class Renderer {
             customLine.addChild(arrow);
         }
 
+        path.strokeWidth = this.exitFactor;
         path.orgStrokeColor = path.strokeColor;
 
-        return path;
+        room.exitsRenders.push(customLine)
+
+        return customLine;
     }
 
     renderArrow(lineStart, lineEnd, color, dashArray, strokeWidth, strokeColor, isOneWay) {
@@ -323,7 +350,7 @@ class Renderer {
 
         if (isOneWay) {
             arrow.position = new paper.Point(lineEnd.x + (lineStart.x - lineEnd.x) / 2, lineEnd.y + (lineStart.y - lineEnd.y) / 2);
-            tailLine.dashArray = [1, 1];
+            tailLine.dashArray = [0.1, 0.1];
             path.fillColor = new paper.Color(1, 0, 0);
             arrow.scale(1.5);
         } else {
@@ -335,20 +362,20 @@ class Renderer {
 
     renderStub(room, dir) {
         this.linkLayer.activate();
-        let startPoint = new paper.Point(room.x + 0.25, room.y + 0.25);
         let path;
         if (this.ladders.indexOf(dir) > -1) {
             path = this.renderLadder(room, dir, true);
         } else {
+            let startPoint = new paper.Point(room.x + this.roomFactor * 0.5, room.y + this.roomFactor * 0.5);
             let exitPoint = new paper.Point(this.getExitX(room.x, dir), this.getExitY(room.y, dir));
             path = new paper.Path();
             path.moveTo(startPoint);
             path.lineTo(exitPoint);
             path.pivot = startPoint;
+            path.scale(2);
             path.position = exitPoint;
-            path.strokeWidth = 1 * this.roomFactor;
+            path.strokeWidth = this.exitFactor;
             path.strokeColor = this.defualtColor;
-            path;
         }
         return path;
     }
@@ -360,13 +387,28 @@ class Renderer {
             3,
             0.3 * this.roomFactor
         );
-        triangle.scale(1, 0.75);
+        triangle.scale(1.2, 0.75);
         let baseColor = this.lightnessDependantColor(room);
-        triangle.strokeWidth = 1 * this.roomFactor;
+        triangle.strokeWidth = this.exitFactor;
         if (!stub) {
             triangle.fillColor = new paper.Color(baseColor, baseColor, baseColor, 0.75);
         }
+
         triangle.strokeColor = new paper.Color(baseColor, baseColor, baseColor);
+
+        let doorType = room.doors[dirsShortToLong(direction)];
+        if (doorType !== undefined) {
+            switch (doorType) {
+                case 1:
+                    triangle.strokeColor = Colors.OPEN_DOOR;
+                    break;
+                case 2:
+                    triangle.strokeColor = Colors.CLOSED_DOOR;
+                    break;
+                default:
+                    triangle.strokeColor = Colors.LOCKED_DOOR;
+            }
+        }
 
         triangle.bringToFront();
 
@@ -396,14 +438,24 @@ class Renderer {
         }
     }
 
-    renderDoors(firstPoint, secondPoint) {
+    renderDoors(firstPoint, secondPoint, type) {
         this.specialLinkLayer.activate();
         let x = (firstPoint.x + secondPoint.x) / 2;
         let y = (firstPoint.y + secondPoint.y) / 2;
         let door = new paper.Path.Rectangle(x - 0.5, y - 0.5, 1, 1);
-        door.scale(0.2, door.center);
-        door.strokeColor = "rgb(226,205,59)";
-        door.strokeWidth = 1;
+        door.scale(this.roomFactor * 0.5, door.center);
+        switch (type) {
+            case 1:
+                door.strokeColor = Colors.OPEN_DOOR;
+                break;
+            case 2:
+                door.strokeColor = Colors.CLOSED_DOOR;
+                break;
+            default:
+                door.strokeColor = Colors.LOCKED_DOOR;
+        }
+
+        door.strokeWidth = this.exitFactor;
     }
 
     renderLabel(value) {
@@ -419,7 +471,7 @@ class Renderer {
             background.fillColor = new paper.Color(value.BgColor.r / 255, value.BgColor.g / 255, value.BgColor.b / 255);
             let text = new paper.PointText(background.bounds.center.add(0, 0.04));
             text.fillColor = new paper.Color(value.FgColor.r / 255, value.FgColor.g / 255, value.FgColor.b / 255);
-            text.fontSize = 0.6;
+            text.fontSize = 0.75;
             text.content = value.text;
             text.fontFamily = "Arial";
             text.justification = "center";
@@ -436,11 +488,6 @@ class Renderer {
         }
     }
 
-    pointerReactor(path) {
-        path.onMouseEnter = (event) => (this.element.style.cursor = "pointer");
-        path.onMouseLeave = (event) => (this.element.style.cursor = "default");
-    }
-
     getXMid(x) {
         return x + this.roomFactor / 2;
     }
@@ -451,7 +498,7 @@ class Renderer {
 
     getExitX(x, dir) {
         if (this.settings.isRound) {
-            return x + 0.25 * this.exitFactor;
+            return x + 0.5 * this.roomFactor;
         }
         switch (dir) {
             case "west":
@@ -467,15 +514,15 @@ class Renderer {
             case "ne":
             case "southeast":
             case "se":
-                return x + 0.5 * this.exitFactor;
+                return x + this.roomFactor;
             default:
-                return x + 0.25 * this.exitFactor;
+                return x + 0.5 * this.roomFactor;
         }
     }
 
     getExitY(y, dir) {
         if (this.settings.isRound) {
-            return y + 0.25 * this.exitFactor;
+            return y + 0.5 * this.roomFactor;
         }
         switch (dir) {
             case "north":
@@ -484,7 +531,7 @@ class Renderer {
             case "nw":
             case "northeast":
             case "ne":
-                return y + 0.5 * this.exitFactor;
+                return y + this.roomFactor;
             case "south":
             case "s":
             case "southwest":
@@ -493,7 +540,7 @@ class Renderer {
             case "se":
                 return y;
             default:
-                return y + 0.25 * this.exitFactor;
+                return y + 0.5 * this.roomFactor;
         }
     }
 
@@ -505,30 +552,54 @@ class Renderer {
         return this.backgroundLayer.getBounds();
     }
 
-    renderPosition(id) {
+    renderPosition(id, color) {
+        this.clearPosition();
         this.overlayLayer.activate();
         let room = this.area.getRoomById(id);
-        let circle = new paper.Shape.Circle(new paper.Point(room.x + 0.25, room.y + 0.25), 0.2);
-        circle.fillColor = new paper.Color(0.5, 0.1, 0.1, 1);
-        circle.strokeWidth = 0.1;
-        circle.strokeColor = new paper.Color(0.9, 0.9, 0.9, 1);
+        let circle = new paper.Shape.Circle(new paper.Point(room.x + this.roomFactor * 0.5, room.y + this.roomFactor * 0.5), this.roomDiagonal * 0.6);
+        circle.fillColor = new paper.Color(0.5, 0.1, 0.1, 0.1);
+        circle.strokeWidth = this.exitFactor;
+        if (color === undefined) {
+            color = [0, 0.9, 0.7];
+        }
+        circle.strokeColor = new paper.Color(color[0], color[1], color[2]);
+        this.position = circle;
+    }
+
+    clearPosition() {
+        if (this.position !== undefined) {
+            this.position.remove();
+        }
     }
 
     renderSelection(id, color) {
+        this.clearSelection();
         this.overlayLayer.activate();
         let room = this.area.getRoomById(id);
         let selection = new paper.Path.Rectangle(new paper.Point(room.x - 0.05, room.y - 0.05), new paper.Size(this.roomFactor + 0.1, this.roomFactor + 0.1));
         selection.fillColor = new paper.Color(1, 1, 1, 0);
-        selection.strokeWidth = 1;
+        selection.strokeWidth = this.exitFactor;
         if (color === undefined) {
             color = [0, 0.9, 0.7];
         }
         selection.strokeColor = new paper.Color(color[0], color[1], color[2]);
+        this.selection = selection;
+    }
+
+    clearSelection() {
+        if (this.selection !== undefined) {
+            this.selection.remove();
+        }
+    }
+
+    clear() {
+        this.paper.clear();
     }
 }
 
 module.exports = {
     Renderer: Renderer,
+    Settings: Settings,
 };
 
 function getKeyByValue(obj, val) {
@@ -563,19 +634,6 @@ let dirNumbers = {
     8: "sw",
     9: "u",
     10: "d",
-};
-
-let plDirs = {
-    north: "polnoc",
-    south: "poludnie",
-    east: "wschod",
-    west: "zachod",
-    northeast: "polnocny-wschod",
-    northwest: "polnocny-zachod",
-    southeast: "poludniowy-wschod",
-    southwest: "poludniowy-zachod",
-    up: "gora",
-    down: "dol",
 };
 
 function dirsShortToLong(dir) {

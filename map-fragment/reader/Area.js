@@ -13,23 +13,33 @@ class Area {
     }
 
     getAreaBounds() {
-        let minX = 9999999999;
-        let minY = 9999999999;
-        let maxX = -9999999999;
-        let maxY = -9999999999;
-        this.rooms.forEach(function (element) {
-            minX = Math.min(minX, element.x);
-            minY = Math.min(minY, element.y);
-            maxX = Math.max(maxX, element.x);
-            maxY = Math.max(maxY, element.y);
-        });
-        this.labels.forEach(function (element) {
-            minX = Math.min(minX, element.X);
-            minY = Math.min(minY, element.Y);
-            maxX = Math.max(maxX, element.X + element.Width / 1.5);
-            maxY = Math.max(maxY, element.Y + element.Height / 1.5);
-        })
-        return { minX: minX, minY: minY, maxX: maxX, maxY: maxY, width : maxX - minX, height : maxY - minY }
+        if (this.bounds === undefined) {
+            let minX = 9999999999;
+            let minY = 9999999999;
+            let maxX = -9999999999;
+            let maxY = -9999999999;
+            this.rooms.forEach((room) => {
+                if (room.z !== this.zIndex) {
+                    return;
+                }
+                minX = Math.min(minX, room.x);
+                minY = Math.min(minY, room.y);
+                maxX = Math.max(maxX, room.x);
+                maxY = Math.max(maxY, room.y);
+            });
+            this.labels.forEach((label) => {
+                if (label.Z !== this.zIndex) {
+                    return;
+                }
+                minX = Math.min(minX, label.X);
+                minY = Math.min(minY, label.Y);
+                maxX = Math.max(maxX, label.X + label.Width);
+                maxY = Math.max(maxY, label.Y + label.Height);
+            });
+            this.bounds = { minX: minX, minY: minY, maxX: maxX, maxY: maxY };
+        }
+
+        return this.bounds;
     }
 
     getRoomById(id) {
@@ -46,5 +56,5 @@ class Area {
 }
 
 module.exports = {
-    Area: Area
-}
+    Area: Area,
+};
