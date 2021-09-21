@@ -20,6 +20,7 @@ class Settings {
     frameMode = false;
     areaName = true;
     showLabels = true;
+    uniformLevelSize = false;
 }
 
 paper.Item.prototype.registerClick = function (callback) {
@@ -56,11 +57,11 @@ class Renderer {
         this.roomFactor = this.roomSize / gridSize;
         this.exitFactor = this.settings.exitsSize * 0.01;
         this.roomDiagonal = this.roomFactor * Math.sqrt(2);
-        this.ladders = ["up", "down", "u", "d"];
+        this.innerExits = ["up", "down", "u", "d", "in", "out", "i", "u"];
         this.paper = new paper.PaperScope();
+        this.bounds = this.area.getAreaBounds(this.settings.uniformLevelSize);
         if (element == undefined) {
-            let bounds = this.area.getAreaBounds();
-            element = new paper.Size((bounds.width + padding * 2) * this.scale, (bounds.height + padding * 2) * this.scale);
+            element = new paper.Size((this.bounds.width + padding * 2) * this.scale, (this.bounds.height + padding * 2) * this.scale);
             this.isVisual = false;
         } else {
             this.isVisual = true;
@@ -82,8 +83,7 @@ class Renderer {
 
     render(pngRender = false) {
         this.pngRender = pngRender;
-        let bounds = this.area.getAreaBounds();
-        this.renderBackground(bounds.minX - padding, bounds.minY - padding, bounds.maxX + padding, bounds.maxY + padding);
+        this.renderBackground(this.bounds.minX - padding, this.bounds.minY - padding, this.bounds.maxX + padding, this.bounds.maxY + padding);
         this.renderHeader();
         this.area.rooms
             .filter((room) => room.z == this.area.zIndex)
@@ -94,7 +94,10 @@ class Renderer {
             this.bgLabels.activate();
             this.area.labels.forEach((value) => this.renderLabel(value), this);
         }
-        this.matrix = new paper.Matrix(1, 0, 0, -1, -bounds.minX + padding, bounds.maxY + padding).scale(this.scale, new paper.Point(bounds.minX, bounds.maxY));
+        this.matrix = new paper.Matrix(1, 0, 0, -1, -this.bounds.minX + padding, this.bounds.maxY + padding).scale(
+            this.scale,
+            new paper.Point(this.bounds.minX, this.bounds.maxY)
+        );
         this.transform();
         if (this.isVisual) {
             this.controls = new Controls(this, this.reader, this.element, this.paper);
@@ -102,13 +105,12 @@ class Renderer {
     }
 
     transform() {
-        let bounds = this.area.getAreaBounds();
         let padding = 1 * this.scale;
         this.paper.project.layers.forEach((layer) => {
             layer.applyMatrix = false;
-            layer.matrix = new paper.Matrix(1, 0, 0, -1, -bounds.minX + padding, bounds.maxY + padding).scale(
+            layer.matrix = new paper.Matrix(1, 0, 0, -1, -this.bounds.minX + padding, this.bounds.maxY + padding).scale(
                 this.scale,
-                new paper.Point(bounds.minX, bounds.maxY)
+                new paper.Point(this.bounds.minX, this.bounds.maxY)
             );
         });
     }
@@ -155,12 +157,12 @@ class Renderer {
 
         room.exitsRenders = room.exitsRenders != undefined ? room.exitsRenders : [];
         for (let dir in room.exits) {
-            if (this.ladders.indexOf(dir) <= -1) {
+            if (this.innerExits.indexOf(dir) <= -1) {
                 if (room.exits.hasOwnProperty(dir) && !room.customLines.hasOwnProperty(dirLongToShort(dir))) {
                     this.renderLink(room, room.exits[dir], dir);
                 }
             } else {
-                this.renderLadder(room, dir);
+                this.renderInnerExit(room, dir);
             }
         }
 
@@ -174,8 +176,8 @@ class Renderer {
             this.renderCustomLine(room, dir);
         }
 
-        for (let dir in room.exitStubs) {
-            this.renderStub(room, dirNumbers[room.exitStubs[dir]]);
+        for (let dir in room.stubs) {
+            this.renderStub(room, dirNumbers[room.stubs[dir]]);
         }
 
         this.renderChar(room);
@@ -188,7 +190,7 @@ class Renderer {
 
     renderLink(room, targetId, dir) {
         let exitKey = new Array(room.id, targetId).sort().join("#");
-        if (this.exitsRendered[exitKey]) {
+        if (this.exitsRendered[exitKey] && room.doors[dirLongToShort(dir)] === undefined) {
             return;
         }
         this.linkLayer.activate();
@@ -363,8 +365,8 @@ class Renderer {
     renderStub(room, dir) {
         this.linkLayer.activate();
         let path;
-        if (this.ladders.indexOf(dir) > -1) {
-            path = this.renderLadder(room, dir, true);
+        if (this.innerExits.indexOf(dir) > -1) {
+            path = this.renderInnerExit(room, dir, true);
         } else {
             let startPoint = new paper.Point(room.x + this.roomFactor * 0.5, room.y + this.roomFactor * 0.5);
             let exitPoint = new paper.Point(this.getExitX(room.x, dir), this.getExitY(room.y, dir));
@@ -380,8 +382,57 @@ class Renderer {
         return path;
     }
 
-    renderLadder(room, direction, stub = false) {
+    renderInnerExit(room, direction, stub = false) {
         this.labelsLayer.activate();
+
+        let group = new paper.Group();
+
+        if (direction === "down" || direction == "d") {
+            group.addChild(this.renderInnerTriangle(room, direction, stub));
+        }
+
+        if (direction === "up" || direction === "u") {
+            group.addChild(this.renderInnerTriangle(room, direction, stub));
+            group.rotate(180, room.render.bounds.center);
+        }
+
+        if (direction === "in" || direction === "i") {
+            let left = this.renderInnerTriangle(room, direction, stub);
+            left.rotate(90, room.render.bounds.center);
+            left.scale(0.4, room.render.bounds.center);
+            left.position.x -= 0.01;
+            let right = this.renderInnerTriangle(room, direction, stub);
+            right.scale(0.4, room.render.bounds.center);
+            right.rotate(270, room.render.bounds.center);
+            right.position.x += 0.01;
+            group.addChild(left);
+            group.addChild(right);
+        }
+
+        if (direction === "out" || direction === "o") {
+            let left = this.renderInnerTriangle(room, direction, stub);
+            left.rotate(270, room.render.bounds.center);
+            left.scale(0.5, room.render.bounds.rightCenter);
+            left.rotate(180);
+            left.position.x -= 0.01;
+            let right = this.renderInnerTriangle(room, direction, stub);
+            right.rotate(90, room.render.bounds.center);
+            right.scale(0.5, room.render.bounds.leftCenter);
+            right.rotate(180);
+            right.position.x += 0.01;
+            group.addChild(left);
+            group.addChild(right);
+        }
+
+        if (this.settings.isRound) {
+            group.scale(0.8, 0.8, new paper.Point(room.render.bounds.center));
+        }
+        group.locked = true;
+
+        return group;
+    }
+
+    renderInnerTriangle(room, direction, stub) {
         let triangle = new paper.Path.RegularPolygon(
             new paper.Point(room.render.bounds.bottomCenter).subtract(new paper.Point(0, 0.2 * this.roomFactor)),
             3,
@@ -411,15 +462,6 @@ class Renderer {
         }
 
         triangle.bringToFront();
-
-        if (direction === "up" || direction === "u") {
-            triangle.rotate(180, new paper.Point(room.render.bounds.center));
-        }
-
-        if (this.settings.isRound) {
-            triangle.scale(0.8, 0.8, new paper.Point(room.render.bounds.center));
-        }
-
         return triangle;
     }
 
@@ -432,7 +474,7 @@ class Renderer {
             if (!room.userData || room.userData["system.fallback_symbol_color"] === undefined) {
                 text.fillColor = this.lightnessDependantColor(room);
             } else {
-                text.fillColor = room.userData["system.fallback_symbol_color"]
+                text.fillColor = room.userData["system.fallback_symbol_color"];
             }
             text.fontSize = size;
             text.content = room.roomChar;
@@ -473,7 +515,7 @@ class Renderer {
         } else {
             let background = new paper.Path.Rectangle(new paper.Point(value.X, value.Y - value.Height), new paper.Size(value.Width, value.Height));
             background.fillColor = new paper.Color(value.BgColor.r / 255, value.BgColor.g / 255, value.BgColor.b / 255);
-            let text = new paper.PointText(background.bounds.center.add(0, 0.04));
+            let text = new paper.PointText(background.bounds.center.add(0, 0.15));
             text.fillColor = new paper.Color(value.FgColor.r / 255, value.FgColor.g / 255, value.FgColor.b / 255);
             text.fontSize = 0.75;
             text.content = value.Text;
@@ -561,12 +603,15 @@ class Renderer {
         this.overlayLayer.activate();
         let room = this.area.getRoomById(id);
         let circle = new paper.Shape.Circle(new paper.Point(room.x + this.roomFactor * 0.5, room.y + this.roomFactor * 0.5), this.roomDiagonal * 0.6);
-        circle.fillColor = new paper.Color(0.5, 0.1, 0.1, 0.1);
-        circle.strokeWidth = this.exitFactor;
+        circle.fillColor = new paper.Color(0.5, 0.1, 0.1, 0.2);
+        circle.strokeWidth = this.exitFactor * 5;
+        circle.hadowColor = new paper.Color(1, 1, 1);
+        circle.shadowBlur = 12;
         if (color === undefined) {
             color = [0, 0.9, 0.7];
         }
         circle.strokeColor = new paper.Color(color[0], color[1], color[2]);
+        circle.dashArray = [0.05, 0.05];
         this.position = circle;
     }
 
@@ -625,6 +670,8 @@ let dirs = {
     southwest: "sw",
     up: "u",
     down: "d",
+    in: "i",
+    out: "o",
 };
 
 let dirNumbers = {
@@ -638,6 +685,8 @@ let dirNumbers = {
     8: "sw",
     9: "u",
     10: "d",
+    11: "i",
+    12: "o",
 };
 
 function dirsShortToLong(dir) {

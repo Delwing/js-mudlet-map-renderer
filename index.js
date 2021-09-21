@@ -283,7 +283,7 @@ class PageControls {
     infoExit(exit, id) {
         let areaLink = "";
         let destRoom = this.reader.getRoomById(id);
-        if (destRoom.area !== this.renderer.area.areaId) {
+        if (destRoom.areaId !== this.renderer.area.areaId) {
             let area = this.reader.getAreaProperties(destRoom.areaId);
             areaLink = " ->  " + '<a href="#" data-room="' + destRoom.id + '">' + area.areaName + "</a>";
         }

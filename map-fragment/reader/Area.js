@@ -12,14 +12,14 @@ class Area {
         this.zIndex = zIndex;
     }
 
-    getAreaBounds() {
+    getAreaBounds(full = false) {
         if (this.bounds === undefined) {
             let minX = 9999999999;
             let minY = 9999999999;
             let maxX = -9999999999;
             let maxY = -9999999999;
             this.rooms.forEach((room) => {
-                if (room.z !== this.zIndex) {
+                if (!full && room.z !== this.zIndex) {
                     return;
                 }
                 minX = Math.min(minX, room.x);
@@ -28,7 +28,7 @@ class Area {
                 maxY = Math.max(maxY, room.y);
             });
             this.labels.forEach((label) => {
-                if (label.Z !== this.zIndex) {
+                if (!full && label.Z !== this.zIndex) {
                     return;
                 }
                 minX = Math.min(minX, label.X);
