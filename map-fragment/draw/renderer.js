@@ -79,6 +79,7 @@ class Renderer {
         this.overlayLayer = new paper.Layer();
         this.exitsRendered = {};
         this.defualtColor = new paper.Color(this.colors.default[0] / 255, this.colors.default[1] / 255, this.colors.default[2] / 255);
+        this.render();
     }
 
     render(pngRender = false) {
@@ -643,6 +644,18 @@ class Renderer {
 
     clear() {
         this.paper.clear();
+    }
+
+    exportSvg(roomId, padding) {        
+        let bounds = 'content';
+        if (roomId !== undefined) {
+            let room = this.reader.roomIndex[roomId]
+            if (room === undefined) {
+                throw new Error(`Room ${roomId} not found.`)
+            }
+            bounds = new paper.Rectangle(this.getRealPoint(new paper.Point(room.x, room.y)).subtract(padding * this.scale), padding * 2 * this.scale, padding * 2 * this.scale);
+        }
+        return this.paper.project.exportSVG({ asString: true, bounds: bounds });
     }
 }
 
