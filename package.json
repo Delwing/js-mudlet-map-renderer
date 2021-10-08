@@ -1,9 +1,22 @@
 {
     "name": "mudlet-map-renderer",
     "version": "0.0.1",
+    "keywords": [
+        "mudlet",
+        "map",
+        "mud"
+    ],
+    "repository": {
+        "url": "git+https://github.com/Delwing/js-mudlet-map-renderer.git"
+    },
+    "bugs": {
+        "url": "https://github.com/Delwing/js-mudlet-map-renderer/issues"
+    },
+    "homepage": "https://github.com/Delwing/js-mudlet-map-renderer#readme",
     "license": "MIT",
     "dependencies": {
         "paper-jsdom": "^0.12.15"
     },
+    "devDependencies": {},
     "exports": "./exports.js"
 }
