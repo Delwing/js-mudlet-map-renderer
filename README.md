@@ -50,5 +50,6 @@ class Settings {
     areaName = true;
     showLabels = true;
     uniformLevelSize = false;
+    fontFamily = 'sans-serif';
 }
 ```
