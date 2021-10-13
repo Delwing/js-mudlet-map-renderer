@@ -21,6 +21,7 @@ class Settings {
     areaName = true;
     showLabels = true;
     uniformLevelSize = false;
+    fontFamily = 'sans-serif'
 }
 
 paper.Item.prototype.registerClick = function (callback) {
@@ -132,6 +133,7 @@ class Renderer {
             let header = new paper.PointText(bounds.x + 2.5, bounds.y + bounds.height - 2.5);
             header.fillColor = new paper.Color(1, 1, 1, 1);
             header.fontSize = 2.5;
+            header.fontFamily = this.settings.fontFamily;
             header.content = this.area.areaName;
             header.scale(1, -1);
         }
@@ -520,7 +522,7 @@ class Renderer {
             text.fillColor = new paper.Color(value.FgColor.r / 255, value.FgColor.g / 255, value.FgColor.b / 255);
             text.fontSize = 0.75;
             text.content = value.Text;
-            text.fontFamily = "Arial";
+            text.fontFamily = this.settings.fontFamily;
             text.justification = "center";
             text.locked = true;
             text.scale(1, -1);

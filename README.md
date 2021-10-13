@@ -18,8 +18,8 @@ Until version `1.0.0` API is subject of change. Use with caution!
 
 ```js
 const fs = require("fs");
-const { MudletMapReader } = require("mudlet-map-binary-reader") //mudlet-map-binary-reader
-const { Renderer, MapReader } = require("../exports")
+const { MudletMapReader } = require("mudlet-map-binary-reader") //npm mudlet-map-binary-reader
+const { Renderer, MapReader } = require("mudlet-map-renderer")
 
 let map = MudletMapReader.read("./data/map.dat");
 MudletMapReader.export(map, "./data");
@@ -32,7 +32,7 @@ const roomId = 1;
 const scale = 40;
 let area = reader.getAreaByRoomId(roomId);
 let settings = { scale: scale}
-let renderer = new Renderer(null, reader, area, reader.getColors(), options);
+let options = new Renderer(null, reader, area, reader.getColors(), options);
 fs.writeFileSync("mapFull.svg", renderer.exportSvg());
 fs.writeFileSync("mapFragment.svg", renderer.exportSvg(roomId, 10));
 console.log("Map generated");
