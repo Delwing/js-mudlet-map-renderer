@@ -21,7 +21,8 @@ class Settings {
     areaName = true;
     showLabels = true;
     uniformLevelSize = false;
-    fontFamily = 'sans-serif'
+    fontFamily = 'sans-serif';
+    mapBackground = "#000000";
 }
 
 paper.Item.prototype.registerClick = function (callback) {
@@ -86,7 +87,7 @@ class Renderer {
     render(pngRender = false) {
         this.pngRender = pngRender;
         this.renderBackground(this.bounds.minX - padding, this.bounds.minY - padding, this.bounds.maxX + padding, this.bounds.maxY + padding);
-        this.renderHeader();
+        this.renderHeader(this.bounds.minX - padding / 2, this.bounds.maxY + padding / 2);
         this.area.rooms
             .filter((room) => room.z == this.area.zIndex)
             .forEach((room) => {
@@ -94,7 +95,9 @@ class Renderer {
             });
         if (this.area.labels !== undefined && this.settings.showLabels) {
             this.bgLabels.activate();
-            this.area.labels.forEach((value) => this.renderLabel(value), this);
+            this.area.labels
+                .filter((label) => label.Z == this.area.zIndex)
+                .forEach((value) => this.renderLabel(value), this);
         }
         this.matrix = new paper.Matrix(1, 0, 0, -1, -this.bounds.minX + padding, this.bounds.maxY + padding).scale(
             this.scale,
@@ -120,17 +123,16 @@ class Renderer {
     renderBackground(x1, y1, x2, y2) {
         this.backgroundLayer.activate();
         let background = new paper.Path.Rectangle(new paper.Point(x1, y1), new paper.Point(x2, y2));
-        background.fillColor = new paper.Color(0, 0, 0);
+        background.fillColor = new paper.Color(this.settings.mapBackground);
         background.registerClick(() => {
             this.emitter.dispatchEvent(new CustomEvent("backgroundClick"));
         });
     }
 
-    renderHeader() {
+    renderHeader(x, y) {
         if (this.settings.areaName) {
             this.backgroundLayer.activate();
-            let bounds = this.getBounds();
-            let header = new paper.PointText(bounds.x + 2.5, bounds.y + bounds.height - 2.5);
+            let header = new paper.PointText(x, y);
             header.fillColor = new paper.Color(1, 1, 1, 1);
             header.fontSize = 2.5;
             header.fontFamily = this.settings.fontFamily;
@@ -471,7 +473,7 @@ class Renderer {
     renderChar(room) {
         this.charsLayer.activate();
         if (room.roomChar) {
-            let size = 0.85 * this.roomFactor;
+            let size = 0.85 * this.roomFactor / room.roomChar.length;
             let x = this.pngRender ? room.render.position.x - 0.1 : room.render.position.x;
             let text = new paper.PointText(x, room.render.position.y + size / 4);
             if (!room.userData || room.userData["system.fallback_symbol_color"] === undefined) {

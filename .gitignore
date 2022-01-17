@@ -4,3 +4,4 @@ data
 yarn-error.log
 examples
 tester
+.vscode

@@ -51,5 +51,6 @@ class Settings {
     showLabels = true;
     uniformLevelSize = false;
     fontFamily = 'sans-serif';
+    mapBackground = "#000000";
 }
 ```

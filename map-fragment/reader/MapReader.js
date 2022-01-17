@@ -46,7 +46,13 @@ class MapReader {
                 }
                 return isWithinBounds;
             }),
-            area.labels.filter((value) => value.Z === zIndex),
+            area.labels.filter((label) => {
+                let isWithinBounds = true;
+                if (limits) {
+                    isWithinBounds = limits.xMin < label.X && limits.xMax > label.X && limits.yMin < label.Y && limits.yMax > label.Y;
+                }
+                return isWithinBounds;
+            }),
             zIndex,
             levels
         );
