@@ -1,3 +1,6 @@
+# 0.0.4
+- fix exports
+
 # 0.0.3
 - add option to set font and background color
 - multiple fixes
