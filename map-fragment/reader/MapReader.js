@@ -56,12 +56,12 @@ class MapReader {
             zIndex,
             levels
         );
-        if (!levels.has(zIndex)) {
+        if (area.rooms.length > 0 && !levels.has(zIndex)) {
             candidateArea = this.getArea(areaId, levels.values().next().value);
         }
         return candidateArea;
     }
-    
+
     getAreaProperties(areaId) {
         return this.data[this.mapDataIndex[areaId]];
     }
@@ -81,7 +81,7 @@ class MapReader {
     getRoomById(id) {
         return this.roomIndex[id];
     }
-    
+
 }
 
 module.exports = {
