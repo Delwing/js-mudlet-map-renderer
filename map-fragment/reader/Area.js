@@ -4,10 +4,7 @@ class Area {
         this.areaName = areaName;
         this.rooms = [];
         this.labels = labels;
-        let that = this;
-        rooms.forEach(function (element) {
-            that.rooms[element.id] = element;
-        });
+        rooms.forEach(element => this.rooms[element.id] = element)
         this.levels = levels;
         this.zIndex = zIndex;
     }
@@ -52,6 +49,23 @@ class Area {
 
     getZIndex() {
         return this.zIndex;
+    }
+
+    limit(id, padding) {
+        let room = this.rooms[id];
+        let limits = {
+            xMin: room.x - padding,
+            xMax: room.x + padding,
+            yMin: room.y - padding,
+            yMax: room.y + padding,
+        }
+
+        let onScreen = this.rooms.filter(room => limits.xMin < room.x && limits.xMax > room.x && limits.yMin < room.y && limits.yMax > room.y).map(item => item.id)
+
+        return new Area(this.areaId, this.areaName,
+             this.rooms.filter(room => onScreen.includes(room.id) || Object.values(room.exits).filter(val => onScreen.includes(val)).length > 0), 
+             this.labels.filter(label => limits.xMin < label.X && limits.xMax > label.X && limits.yMin < label.Y && limits.yMax > label.Y),
+             this.zIndex, this.levels);   
     }
 }
 

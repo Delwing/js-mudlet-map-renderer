@@ -1,3 +1,6 @@
+# 0.0.5
+- add limit function for areas
+
 # 0.0.4
 - fix exports
 
