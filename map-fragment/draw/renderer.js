@@ -26,7 +26,6 @@ class Settings {
         this.mapBackground = "#000000";
     }
 }
-}
 
 paper.Item.prototype.registerClick = function (callback) {
     if (typeof document !== "undefined") {

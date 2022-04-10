@@ -1,3 +1,5 @@
+# 0.0.7
+- fix renderer compliation error
 # 0.0.6
 - fix controls error when zooming out max
 - make JS code not use experimental features
