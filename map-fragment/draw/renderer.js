@@ -5,24 +5,27 @@ const Controls = require("./controls").Controls;
 const padding = 7;
 const gridSize = 20;
 
-class Colors {
-    static OPEN_DOOR = new paper.Color(10 / 255, 155 / 255, 10 / 255);
-    static CLOSED_DOOR = new paper.Color(226 / 255, 205 / 255, 59 / 255);
-    static LOCKED_DOOR = new paper.Color(155 / 255, 10 / 255, 10 / 255);
+const Colors = {
+    OPEN_DOOR : new paper.Color(10 / 255, 155 / 255, 10 / 255),
+    CLOSED_DOOR : new paper.Color(226 / 255, 205 / 255, 59 / 255),
+    LOCKED_DOOR : new paper.Color(155 / 255, 10 / 255, 10 / 255)
 }
 
 class Settings {
-    isRound = false;
-    scale = 55;
-    roomSize = 10;
-    exitsSize = 2;
-    borders = false;
-    frameMode = false;
-    areaName = true;
-    showLabels = true;
-    uniformLevelSize = false;
-    fontFamily = 'sans-serif';
-    mapBackground = "#000000";
+    constructor() {
+        this.isRound = false;
+        this.scale = 55;
+        this.roomSize = 10;
+        this.exitsSize = 2;
+        this.borders = false;
+        this.frameMode = false;
+        this.areaName = true;
+        this.showLabels = true;
+        this.uniformLevelSize = false;
+        this.fontFamily = 'sans-serif';
+        this.mapBackground = "#000000";
+    }
+}
 }
 
 paper.Item.prototype.registerClick = function (callback) {

@@ -1,3 +1,6 @@
+# 0.0.6
+- fix controls error when zooming out max
+- make JS code not use experimental features
 # 0.0.5
 - add limit function for areas
 

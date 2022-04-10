@@ -1,6 +1,6 @@
 {
     "name": "mudlet-map-renderer",
-    "version": "0.0.5",
+    "version": "0.0.6",
     "keywords": [
         "mudlet",
         "map",
@@ -17,5 +17,5 @@
     "dependencies": {
         "paper-jsdom": "^0.12.15"
     },
-    "exports": "./exports.js"
+    "main": "./exports.js"
 }

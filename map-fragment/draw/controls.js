@@ -76,10 +76,10 @@ class Controls {
             this.element.style.cursor = "all-scroll";
             let bounds = this.renderer.getBounds();
             let viewBounds = this.view.getBounds();
+            let delta = event.downPoint.subtract(event.point);
             if (viewBounds.x < bounds.x) {
                 this.view.translate(delta);
             }
-            let delta = event.downPoint.subtract(event.point);
             this.view.translate(delta.negate());
             this.isDrag = true;
         };
