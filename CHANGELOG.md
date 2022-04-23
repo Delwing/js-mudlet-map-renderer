@@ -1,3 +1,5 @@
+# 0.0.8
+- remove wrong limits for drag
 # 0.0.7
 - fix renderer compliation error
 # 0.0.6
