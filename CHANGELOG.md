@@ -1,3 +1,6 @@
+# 0.0.9
+- add transparent labels option
+
 # 0.0.8
 - remove wrong limits for drag
 # 0.0.7

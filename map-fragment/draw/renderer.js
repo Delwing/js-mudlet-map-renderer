@@ -24,6 +24,7 @@ class Settings {
         this.uniformLevelSize = false;
         this.fontFamily = 'sans-serif';
         this.mapBackground = "#000000";
+        this.transparentLabels = false;
     }
 }
 
@@ -521,7 +522,9 @@ class Renderer {
             label.scale(this.roomFactor * 0.08, -this.roomFactor * 0.08);
         } else {
             let background = new paper.Path.Rectangle(new paper.Point(value.X, value.Y - value.Height), new paper.Size(value.Width, value.Height));
-            background.fillColor = new paper.Color(value.BgColor.r / 255, value.BgColor.g / 255, value.BgColor.b / 255);
+            if (!this.settings.transparentLabels) {
+                background.fillColor = new paper.Color(value.BgColor.r / 255, value.BgColor.g / 255, value.BgColor.b / 255);
+            }
             let text = new paper.PointText(background.bounds.center.add(0, 0.15));
             text.fillColor = new paper.Color(value.FgColor.r / 255, value.FgColor.g / 255, value.FgColor.b / 255);
             text.fontSize = 0.75;
