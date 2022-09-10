@@ -1,3 +1,6 @@
+# 0.0.10
+- fix frame mode for background selection
+
 # 0.0.9
 - add transparent labels option
 
