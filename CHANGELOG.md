@@ -1,3 +1,7 @@
+
+# 0.0.11
+- another fix frame mode for background selection
+
 # 0.0.10
 - fix frame mode for background selection
 

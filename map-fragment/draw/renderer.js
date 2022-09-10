@@ -157,9 +157,7 @@ class Renderer {
             color = [114, 1, 0];
         }
         let roomColor = new paper.Color(color[0] / 255, color[1] / 255, color[2] / 255, 1);
-        if (!this.settings.frameMode) {
-            roomShape.fillColor = roomColor;
-        }
+        roomShape.fillColor = !this.settings.frameMode ? roomColor : new paper.Color(this.settings.mapBackground);
         roomShape.strokeWidth = this.exitFactor;
         roomShape.strokeColor = !this.settings.borders || this.settings.frameMode ? roomColor : this.defualtColor;
 
