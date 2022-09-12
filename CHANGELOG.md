@@ -1,3 +1,5 @@
+# 0.0.15
+- additional fix for custom exit lines exit
 # 0.0.14
 - add area change clicks on custom exit lines
 # 0.0.13
