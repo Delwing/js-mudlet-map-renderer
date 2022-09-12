@@ -527,7 +527,7 @@ class Renderer {
             }
             let text = new paper.PointText(background.bounds.center.add(0, 0.15));
             text.fillColor = new paper.Color(value.FgColor.r / 255, value.FgColor.g / 255, value.FgColor.b / 255);
-            text.fontSize = 0.75;
+            text.fontSize = Math.min(0.75, value.Width / (value.Text.length / 2));
             text.content = value.Text;
             text.fontFamily = this.settings.fontFamily;
             text.justification = "center";

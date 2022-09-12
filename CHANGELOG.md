@@ -1,3 +1,5 @@
+# 0.0.12
+- try to limit label font size to fit within label bounds
 
 # 0.0.11
 - another fix frame mode for background selection
