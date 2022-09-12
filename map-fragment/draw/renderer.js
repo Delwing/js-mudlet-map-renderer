@@ -184,7 +184,7 @@ class Renderer {
         }
 
         for (let dir in room.customLines) {
-            this.renderCustomLine(room, dir, room.exits[dir]);
+            this.renderCustomLine(room, dir, room.exits[dir] ?? room.specialExits[dir]);
         }
 
         for (let dir in room.stubs) {
