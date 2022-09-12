@@ -52,5 +52,7 @@ class Settings {
     uniformLevelSize = false;
     fontFamily = 'sans-serif';
     mapBackground = "#000000";
+    linesColor = '#FFFFFF';
+    transparentLabels = false;
 }
 ```

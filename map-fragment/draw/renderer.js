@@ -8,7 +8,9 @@ const gridSize = 20;
 const Colors = {
     OPEN_DOOR : new paper.Color(10 / 255, 155 / 255, 10 / 255),
     CLOSED_DOOR : new paper.Color(226 / 255, 205 / 255, 59 / 255),
-    LOCKED_DOOR : new paper.Color(155 / 255, 10 / 255, 10 / 255)
+    LOCKED_DOOR : new paper.Color(155 / 255, 10 / 255, 10 / 255),
+    DEFAULT_BACKGROUND : new paper.Color(0, 0, 0),
+    DEFAULT : new paper.Color(1, 1, 1),
 }
 
 class Settings {
@@ -23,7 +25,8 @@ class Settings {
         this.showLabels = true;
         this.uniformLevelSize = false;
         this.fontFamily = 'sans-serif';
-        this.mapBackground = "#000000";
+        this.mapBackground = Colors.DEFAULT_BACKGROUND
+        this.linesColor = Colors.DEFAULT
         this.transparentLabels = false;
     }
 }
@@ -159,7 +162,7 @@ class Renderer {
         let roomColor = new paper.Color(color[0] / 255, color[1] / 255, color[2] / 255, 1);
         roomShape.fillColor = !this.settings.frameMode ? roomColor : new paper.Color(this.settings.mapBackground);
         roomShape.strokeWidth = this.exitFactor;
-        roomShape.strokeColor = !this.settings.borders || this.settings.frameMode ? roomColor : this.defualtColor;
+        roomShape.strokeColor = !this.settings.borders || this.settings.frameMode ? roomColor : this.settings.linesColor;
 
         room.render = roomShape;
 
@@ -214,9 +217,9 @@ class Renderer {
                 path.moveTo(exitPoint);
                 path.lineTo(secondPoint);
                 path.strokeWidth = this.exitFactor;
-                path.strokeColor = this.defualtColor;
+                path.strokeColor = this.settings.linesColor;
             } else {
-                this.renderArrow(exitPoint, secondPoint, this.defualtColor, [], this.exitFactor, this.defualtColor, true);
+                this.renderArrow(exitPoint, secondPoint, this.settings.linesColor, [], this.exitFactor, this.settings.linesColor, true);
             }
         } else {
             secondPoint = new paper.Point(room.x + this.roomFactor / 2, room.y + this.roomFactor / 2);
@@ -264,7 +267,7 @@ class Renderer {
         } else {
             secondPoint = new paper.Point(room.x + this.roomFactor / 2, room.y + this.roomFactor / 2);
             path = this.renderArrow(exitPoint, secondPoint, this.defualtColor, [], this.exitFactor);
-            path.strokeColor = this.defualtColor;
+            path.strokeColor = this.settings.linesColor;
             path.scale(1, exitPoint);
             path.rotate(180, exitPoint);
         }
@@ -385,7 +388,7 @@ class Renderer {
             path.scale(2);
             path.position = exitPoint;
             path.strokeWidth = this.exitFactor;
-            path.strokeColor = this.defualtColor;
+            path.strokeColor = this.settings.linesColor;
         }
         return path;
     }

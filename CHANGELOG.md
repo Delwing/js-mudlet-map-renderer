@@ -1,3 +1,6 @@
+# 0.0.13
+- add line color (experimental)
+
 # 0.0.12
 - try to limit label font size to fit within label bounds
 
