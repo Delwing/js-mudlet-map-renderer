@@ -270,6 +270,7 @@ class Renderer {
             path.strokeColor = this.settings.linesColor;
             path.scale(1, exitPoint);
             path.rotate(180, exitPoint);
+            path.registerClick(() => this.emitter.dispatchEvent(new CustomEvent("areaArrowClick", { detail: targetId })));
         }
 
         room.exitsRenders.push(path);
