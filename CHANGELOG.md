@@ -1,3 +1,7 @@
+# 0.0.16
+- add emoss setting
+- add drag event
+
 # 0.0.15
 - additional fix for custom exit lines exit
 # 0.0.14
