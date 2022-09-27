@@ -1,3 +1,6 @@
+# 0.0.17
+- fix emboss
+
 # 0.0.16
 - add emoss setting
 - add drag event
