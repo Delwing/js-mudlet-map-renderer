@@ -198,10 +198,10 @@ class Renderer {
             this.overlayLayer.activate()
             let emboss
             if (new paper.Color(this.settings.linesColor).lightness > 0.41) {
-                emboss= new paper.Path([room.render.bounds.topRight, room.render.bounds.topLeft, room.render.bounds.bottomLeft])
+                emboss= new paper.Path([room.render.bounds.topLeft, room.render.bounds.topRight, room.render.bounds.bottomRight])
                 emboss.strokeColor = '#000000'
             } else {
-                emboss = emboss= new paper.Path([room.render.bounds.topRight, room.render.bounds.bottomRight, room.render.bounds.bottomLeft])
+                emboss = emboss= new paper.Path([room.render.bounds.topLeft, room.render.bounds.bottomLeft, room.render.bounds.bottomRight])
                 emboss.strokeColor = '#ffffff'
             }
             
