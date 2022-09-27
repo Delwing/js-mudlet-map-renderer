@@ -31,7 +31,7 @@ let reader = new MapReader(mapData, mapColors);
 const roomId = 1;
 const scale = 40;
 let area = reader.getAreaByRoomId(roomId);
-let settings = { scale: scale}
+let settings = { scale: scale }
 let renderer = new Renderer(null, reader, area, reader.getColors(), settings);
 fs.writeFileSync("mapFull.svg", renderer.exportSvg());
 fs.writeFileSync("mapFragment.svg", renderer.exportSvg(roomId, 10));
@@ -54,5 +54,6 @@ class Settings {
     mapBackground = "#000000";
     linesColor = '#FFFFFF';
     transparentLabels = false;
+    emboss = false;
 }
 ```

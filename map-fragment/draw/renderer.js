@@ -28,6 +28,7 @@ class Settings {
         this.mapBackground = Colors.DEFAULT_BACKGROUND
         this.linesColor = Colors.DEFAULT
         this.transparentLabels = false;
+        this.emboss = false;
     }
 }
 
@@ -87,6 +88,7 @@ class Renderer {
         this.overlayLayer = new paper.Layer();
         this.exitsRendered = {};
         this.defualtColor = new paper.Color(this.colors.default[0] / 255, this.colors.default[1] / 255, this.colors.default[2] / 255);
+        this.highlights = [];
         this.render();
     }
 
@@ -112,6 +114,7 @@ class Renderer {
         this.transform();
         if (this.isVisual) {
             this.controls = new Controls(this, this.reader, this.element, this.paper);
+            this.element.dispatchEvent(new CustomEvent("renderComplete", { detail: this }));
         }
     }
 
@@ -189,6 +192,21 @@ class Renderer {
 
         for (let dir in room.stubs) {
             this.renderStub(room, dirNumbers[room.stubs[dir]]);
+        }
+
+        if (this.settings.emboss) {
+            this.overlayLayer.activate()
+            let emboss
+            if (new paper.Color(this.settings.linesColor).lightness > 0.41) {
+                emboss= new paper.Path([room.render.bounds.topRight, room.render.bounds.topLeft, room.render.bounds.bottomLeft])
+                emboss.strokeColor = '#000000'
+            } else {
+                emboss = emboss= new paper.Path([room.render.bounds.topRight, room.render.bounds.bottomRight, room.render.bounds.bottomLeft])
+                emboss.strokeColor = '#ffffff'
+            }
+            
+            
+            emboss.strokeWidth = this.exitFactor
         }
 
         this.renderChar(room);
@@ -535,14 +553,15 @@ class Renderer {
             if (!this.settings.transparentLabels) {
                 background.fillColor = new paper.Color(value.BgColor.r / 255, value.BgColor.g / 255, value.BgColor.b / 255);
             }
-            let text = new paper.PointText(background.bounds.center.add(0, 0.15));
+            let text = new paper.PointText(background.bounds.center.add(0, 0.15 * 8));
             text.fillColor = new paper.Color(value.FgColor.r / 255, value.FgColor.g / 255, value.FgColor.b / 255);
-            text.fontSize = Math.min(0.75, value.Width / (value.Text.length / 2));
+            let ratio = Math.min(0.75, value.Width / (value.Text.length / 2));
+            text.fontSize = 4
             text.content = value.Text;
             text.fontFamily = this.settings.fontFamily;
             text.justification = "center";
             text.locked = true;
-            text.scale(1, -1);
+            text.scale(ratio / 4, -ratio / 4);
         }
     }
 
@@ -660,6 +679,28 @@ class Renderer {
             this.selection.remove();
         }
     }
+
+    renderHighlight(id, color) {
+        this.overlayLayer.activate();
+        let room = this.area.getRoomById(id);
+        let highlight = new paper.Shape.Circle(new paper.Point(room.x + this.roomFactor * 0.5, room.y + this.roomFactor * 0.5), this.roomDiagonal * 0.6);
+        highlight.fillColor = new paper.Color(0.5, 0.1, 0.1, 0.2);
+        highlight.strokeWidth = this.exitFactor * 4;
+        highlight.shadowColor = room.render.fillColor;
+        highlight.shadowBlur = 12;
+        if (color === undefined) {
+            color = [0.4, 0.9, 0.3];
+        }
+        highlight.strokeColor = new paper.Color(color[0], color[1], color[2]);
+        highlight.dashArray = [0.1, 0.1];
+        this.highlights.push(highlight)
+    }
+
+    clearHighlight(id) {
+        this.highlights.forEach((element) => element.remove());
+        this.highlights = [];
+    }
+
 
     clear() {
         this.paper.clear();

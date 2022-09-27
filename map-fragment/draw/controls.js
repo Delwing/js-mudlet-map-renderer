@@ -80,6 +80,7 @@ class Controls {
         };
         toolPan.onMouseDown = () => {
             this.isDrag = false;
+            this.element.dispatchEvent(new CustomEvent("drag", { detail: this.view }));
         };
         toolPan.onMouseUp = () => {
             this.isDrag = false;
