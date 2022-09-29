@@ -77,6 +77,7 @@ class Controls {
             let delta = event.downPoint.subtract(event.point);
             this.view.translate(delta.negate());
             this.isDrag = true;
+            this.element.dispatchEvent(new CustomEvent("drag", { detail: this.view }));
         };
         toolPan.onMouseDown = () => {
             this.isDrag = false;
