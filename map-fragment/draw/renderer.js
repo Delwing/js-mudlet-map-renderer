@@ -89,6 +89,7 @@ class Renderer {
         this.exitsRendered = {};
         this.defualtColor = new paper.Color(this.colors.default[0] / 255, this.colors.default[1] / 255, this.colors.default[2] / 255);
         this.highlights = [];
+        this.path = [];
         this.render();
     }
 
@@ -696,9 +697,36 @@ class Renderer {
         this.highlights.push(highlight)
     }
 
-    clearHighlight(id) {
+    clearHighlight() {
         this.highlights.forEach((element) => element.remove());
         this.highlights = [];
+    }
+
+    renderPath(locations, color) {
+        this.overlayLayer.activate();
+        locations.forEach(id => {
+            let room = this.area.getRoomById(id);
+            let startPoint = new paper.Point(room.x + this.roomFactor * 0.5, room.y + this.roomFactor * 0.5)
+            let exits = Object.values(room.exits).concat(Object.values(room.specialExits))
+            exits.forEach(exitRoomId => {
+                if (locations.indexOf(exitRoomId) > -1) {
+                    let exitRoom = this.area.getRoomById(exitRoomId);
+                    let endPoint = new paper.Point(exitRoom.x + this.roomFactor * 0.5, exitRoom.y + this.roomFactor * 0.5)
+                    let line = new paper.Path.Line(startPoint, endPoint)
+                    line.strokeWidth = this.exitFactor * 4;
+                    if (color === undefined) {
+                        color = [0.4, 0.9, 0.3];
+                    }
+                    line.strokeColor = new paper.Color(color[0], color[1], color[2]);
+                    this.path.push(line)
+                }
+            })
+        })
+    }
+
+    clearPath() {
+        this.path.forEach((element) => element.remove());
+        this.path = [];
     }
 
 

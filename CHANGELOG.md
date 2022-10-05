@@ -1,3 +1,6 @@
+# 0.0.19
+- add path renders
+
 # 0.0.18
 - drag event will be fired actually on drag not only on release
 
