@@ -15,6 +15,7 @@
     "homepage": "https://github.com/Delwing/js-mudlet-map-renderer#readme",
     "license": "MIT",
     "dependencies": {
+        "node-dijkstra": "^2.5.0",
         "paper-jsdom": "^0.12.15"
     },
     "main": "./exports.js"
