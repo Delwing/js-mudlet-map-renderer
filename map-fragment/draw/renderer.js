@@ -82,18 +82,19 @@ class Renderer {
         this.bgLabels = new paper.Layer();
         this.linkLayer = new paper.Layer();
         this.roomLayer = new paper.Layer();
+        this.rasterLayer = new paper.Layer();
         this.labelsLayer = new paper.Layer();
         this.specialLinkLayer = new paper.Layer();
         this.charsLayer = new paper.Layer();
         this.overlayLayer = new paper.Layer();
         this.exitsRendered = {};
         this.defualtColor = new paper.Color(this.colors.default[0] / 255, this.colors.default[1] / 255, this.colors.default[2] / 255);
-        this.highlights = [];
+        this.highlights = new paper.Group();
         this.path = [];
         this.render();
     }
 
-    render(pngRender = false) {
+    render(pngRender = false) {      
         this.pngRender = pngRender;
         this.renderBackground(this.bounds.minX - padding, this.bounds.minY - padding, this.bounds.maxX + padding, this.bounds.maxY + padding);
         this.renderHeader(this.bounds.minX - padding / 2, this.bounds.maxY + padding / 2);
@@ -112,6 +113,12 @@ class Renderer {
             this.scale,
             new paper.Point(this.bounds.minX, this.bounds.maxY)
         );
+        if (this.settings.optimizeDrag) {
+            this.rasterLayer.activate();
+            this.linkRaster = this.linkLayer.rasterize({resolution: 2000});
+            this.roomRaster = this.roomLayer.rasterize({resolution: 2000});
+            this.rasterLayer.visible = false;
+        }
         this.transform();
         if (this.isVisual) {
             this.controls = new Controls(this, this.reader, this.element, this.paper);
@@ -694,16 +701,16 @@ class Renderer {
         }
         highlight.strokeColor = new paper.Color(color[0], color[1], color[2]);
         highlight.dashArray = [0.1, 0.1];
-        this.highlights.push(highlight)
+        this.highlights.addChild(highlight)
     }
 
     clearHighlight() {
-        this.highlights.forEach((element) => element.remove());
-        this.highlights = [];
+        this.highlights.removeChildren()
     }
 
     renderPath(locations, color) {
         this.overlayLayer.activate();
+        let group = new paper.Group();
         locations.forEach(id => {
             let room = this.area.getRoomById(id);
             let startPoint = new paper.Point(room.x + this.roomFactor * 0.5, room.y + this.roomFactor * 0.5)
@@ -718,10 +725,12 @@ class Renderer {
                         color = [0.4, 0.9, 0.3];
                     }
                     line.strokeColor = new paper.Color(color[0], color[1], color[2]);
-                    this.path.push(line)
+                    this.path.push(line);
+                    group.addChild(line);
                 }
             })
         })
+        return group;
     }
 
     clearPath() {

@@ -73,6 +73,7 @@ class Controls {
         let toolPan = new paper.Tool();
         toolPan.activate();
         toolPan.onMouseDrag = (event) => {
+            this.toggleOptimizedDrag(true)
             this.element.style.cursor = "all-scroll";
             let delta = event.downPoint.subtract(event.point);
             this.view.translate(delta.negate());
@@ -86,7 +87,25 @@ class Controls {
         toolPan.onMouseUp = () => {
             this.isDrag = false;
             this.element.style.cursor = "default";
+            this.toggleOptimizedDrag(false)
         };
+    }
+
+    toggleOptimizedDrag(state) {
+        if (!this.renderer.settings.optimizeDrag) {
+            return;
+        }
+        if(state) {
+            if (!this.isDrag) {
+                this.renderer.linkLayer.visible = false
+                this.renderer.roomLayer.visible = false
+                this.renderer.rasterLayer.visible = true
+            }
+        } else {
+            this.renderer.linkLayer.visible = true
+            this.renderer.roomLayer.visible = true
+            this.renderer.rasterLayer.visible = false
+        }
     }
 
     selectRoom(room) {
@@ -118,9 +137,13 @@ class Controls {
     centerRoom(id) {
         let room = this.renderer.area.getRoomById(id);
         if (room !== undefined) {
-            this.view.center = room.render.localToGlobal(room.render.position);
+            this.centerOnItem(room.render);
             this.selectRoom(room);
         }
+    }
+    
+    centerOnItem(item) {
+        this.view.center = item.localToGlobal(item.position);
     }
 
     goToRoomArea(id) {
