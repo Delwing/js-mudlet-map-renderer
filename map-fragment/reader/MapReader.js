@@ -85,5 +85,5 @@ class MapReader {
 }
 
 module.exports = {
-    MapReader: MapReader,
+    MapReader
 };

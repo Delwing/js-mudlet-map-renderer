@@ -126,6 +126,7 @@ class Controls {
             return false;
         }
         this.renderer.clearPosition();
+        this.renderer.clearHighlight();
         if (this.selected !== undefined) {
             this.selected.render.select();
             this.selected.exitsRenders.forEach((render) => render.select());

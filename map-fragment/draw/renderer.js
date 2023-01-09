@@ -90,6 +90,7 @@ class Renderer {
         this.exitsRendered = {};
         this.defualtColor = new paper.Color(this.colors.default[0] / 255, this.colors.default[1] / 255, this.colors.default[2] / 255);
         this.highlights = new paper.Group();
+        this.highlights.locked = true;
         this.path = [];
         this.render();
     }
@@ -701,6 +702,7 @@ class Renderer {
         }
         highlight.strokeColor = new paper.Color(color[0], color[1], color[2]);
         highlight.dashArray = [0.1, 0.1];
+        highlight.locked = true;
         this.highlights.addChild(highlight)
     }
 
@@ -713,11 +715,17 @@ class Renderer {
         let group = new paper.Group();
         locations.forEach(id => {
             let room = this.area.getRoomById(id);
+            if (!room) {
+                return
+            }
             let startPoint = new paper.Point(room.x + this.roomFactor * 0.5, room.y + this.roomFactor * 0.5)
             let exits = Object.values(room.exits).concat(Object.values(room.specialExits))
             exits.forEach(exitRoomId => {
                 if (locations.indexOf(exitRoomId) > -1) {
                     let exitRoom = this.area.getRoomById(exitRoomId);
+                    if (!exitRoom) {
+                        return
+                    }
                     let endPoint = new paper.Point(exitRoom.x + this.roomFactor * 0.5, exitRoom.y + this.roomFactor * 0.5)
                     let line = new paper.Path.Line(startPoint, endPoint)
                     line.strokeWidth = this.exitFactor * 4;
@@ -730,6 +738,7 @@ class Renderer {
                 }
             })
         })
+        group.locked = true;
         return group;
     }
 
