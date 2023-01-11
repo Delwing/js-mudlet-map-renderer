@@ -1,6 +1,6 @@
 {
     "name": "mudlet-map-renderer",
-    "version": "0.0.20",
+    "version": "0.0.21",
     "keywords": [
         "mudlet",
         "map",
@@ -16,7 +16,11 @@
     "license": "MIT",
     "dependencies": {
         "node-dijkstra": "^2.5.0",
-        "paper-jsdom": "^0.12.15"
+        "paper-jsdom": "^0.12.17"
     },
-    "main": "./exports.js"
+    "main": "./exports.js",
+    "devDependencies": {
+        "babelify": "^10.0.0",
+        "@babel/core": "^7.20.12"
+    }
 }

@@ -1,3 +1,9 @@
+# 0.0.21
+- fixes in special links to other areas
+- add controls for paths
+
+# 0.0.20
+
 # 0.0.19
 - add path renders
 

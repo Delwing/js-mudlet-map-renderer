@@ -191,12 +191,12 @@ class Renderer {
 
         for (let dir in room.specialExits) {
             if (room.specialExits.hasOwnProperty(dir) && !room.customLines.hasOwnProperty(dir)) {
-                this.renderSpecialLink(room, dir, room.specialExits[dir]);
+                this.renderSpecialLink(room, room.specialExits[dir], dir);
             }
         }
 
         for (let dir in room.customLines) {
-            this.renderCustomLine(room, dir, room.exits[dir] ?? room.specialExits[dir]);
+            this.renderCustomLine(room, dir, room.exits[dirsShortToLong(dir)] ?? room.specialExits[dirsShortToLong(dir)]);
         }
 
         for (let dir in room.stubs) {
@@ -283,14 +283,14 @@ class Renderer {
         let targetRoom = this.area.getRoomById(targetId);
         let secondPoint;
 
-        if (targetRoom) {
+        if (targetRoom && Object.entries(targetRoom.specialExits).filter(item => item[1] == room.id).filter(item => Object.keys(targetRoom.specialExits).indexOf(item[0] != -1)).length == 0) {
             path = new paper.Path();
             path.moveTo(exitPoint);
             let connectedDir = getKeyByValue(targetRoom.exits, room.id);
             secondPoint = new paper.Point(this.getExitX(targetRoom.x, connectedDir), this.getExitY(targetRoom.y, connectedDir));
             path.lineTo(secondPoint);
-
-            path.strokeWidth = 1;
+            path.strokeColor = this.settings.linesColor;
+            path.strokeWidth = this.exitFactor;
         } else {
             secondPoint = new paper.Point(room.x + this.roomFactor / 2, room.y + this.roomFactor / 2);
             path = this.renderArrow(exitPoint, secondPoint, this.defualtColor, [], this.exitFactor);
@@ -302,7 +302,7 @@ class Renderer {
 
         room.exitsRenders.push(path);
         if (targetRoom) {
-            targetRoom.exitsRenders = targetRoom.exitsRenders != "undefined" ? targetRoom.exitsRenders : [];
+            targetRoom.exitsRenders = targetRoom.exitsRenders ?? [];
             targetRoom.exitsRenders.push(path);
         }
 
@@ -374,6 +374,7 @@ class Renderer {
             customLine.pointerReactor(this.element);
         }
 
+        
         room.exitsRenders.push(customLine);
 
         return customLine;
@@ -653,7 +654,7 @@ class Renderer {
         let circle = new paper.Shape.Circle(new paper.Point(room.x + this.roomFactor * 0.5, room.y + this.roomFactor * 0.5), this.roomDiagonal * 0.6);
         circle.fillColor = new paper.Color(0.5, 0.1, 0.1, 0.2);
         circle.strokeWidth = this.exitFactor * 5;
-        circle.hadowColor = new paper.Color(1, 1, 1);
+        circle.shadowColor = new paper.Color(1, 1, 1);
         circle.shadowBlur = 12;
         if (color === undefined) {
             color = [0, 0.9, 0.7];
@@ -732,12 +733,12 @@ class Renderer {
                     if (color === undefined) {
                         color = [0.4, 0.9, 0.3];
                     }
-                    line.strokeColor = new paper.Color(color[0], color[1], color[2]);
                     this.path.push(line);
                     group.addChild(line);
                 }
             })
         })
+        group.strokeColor = new paper.Color(color[0], color[1], color[2]);
         group.locked = true;
         return group;
     }

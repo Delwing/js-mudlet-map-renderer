@@ -1,4 +1,5 @@
 const paper = require("paper");
+const { PathFinder } = require("../reader/PathFinder");
 
 let selectionStyle = function (item) {
     let style = {
@@ -46,6 +47,8 @@ class Controls {
         this.view.center = bounds.center;
         this.view.zoom = Math.min(this.view.size.width / bounds.width, this.view.size.height / bounds.height);
         this.view.minZoom = this.view.zoom;
+
+        this.pathFinder = new PathFinder(reader);
     }
 
     zoom(event) {
@@ -73,7 +76,7 @@ class Controls {
         let toolPan = new paper.Tool();
         toolPan.activate();
         toolPan.onMouseDrag = (event) => {
-            this.toggleOptimizedDrag(true)
+            this.toggleOptimizedDrag(true);
             this.element.style.cursor = "all-scroll";
             let delta = event.downPoint.subtract(event.point);
             this.view.translate(delta.negate());
@@ -87,7 +90,7 @@ class Controls {
         toolPan.onMouseUp = () => {
             this.isDrag = false;
             this.element.style.cursor = "default";
-            this.toggleOptimizedDrag(false)
+            this.toggleOptimizedDrag(false);
         };
     }
 
@@ -95,16 +98,16 @@ class Controls {
         if (!this.renderer.settings.optimizeDrag) {
             return;
         }
-        if(state) {
+        if (state) {
             if (!this.isDrag) {
-                this.renderer.linkLayer.visible = false
-                this.renderer.roomLayer.visible = false
-                this.renderer.rasterLayer.visible = true
+                this.renderer.linkLayer.visible = false;
+                this.renderer.roomLayer.visible = false;
+                this.renderer.rasterLayer.visible = true;
             }
         } else {
-            this.renderer.linkLayer.visible = true
-            this.renderer.roomLayer.visible = true
-            this.renderer.rasterLayer.visible = false
+            this.renderer.linkLayer.visible = true;
+            this.renderer.roomLayer.visible = true;
+            this.renderer.rasterLayer.visible = false;
         }
     }
 
@@ -142,7 +145,7 @@ class Controls {
             this.selectRoom(room);
         }
     }
-    
+
     centerOnItem(item) {
         this.view.center = item.localToGlobal(item.position);
     }
@@ -154,6 +157,10 @@ class Controls {
 
     move(x, y) {
         this.view.scrollBy(new paper.Point(x * 50, y * 50));
+    }
+
+    renderPath(from, to, color) {
+        return this.renderer.renderPath(this.pathFinder.path(from, to).map(number => parseInt(number)), color)
     }
 }
 
