@@ -160,7 +160,10 @@ class Controls {
     }
 
     renderPath(from, to, color) {
-        return this.renderer.renderPath(this.pathFinder.path(from, to).map(number => parseInt(number)), color)
+        let rooms = this.pathFinder.path(from, to)?.map(number => parseInt(number));
+        if (rooms) {
+            return this.renderer.renderPath(rooms, color);
+        }
     }
 }
 

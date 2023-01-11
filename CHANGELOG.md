@@ -1,3 +1,6 @@
+# 0.0.22
+- handle not existing paths
+
 # 0.0.21
 - fixes in special links to other areas
 - add controls for paths
