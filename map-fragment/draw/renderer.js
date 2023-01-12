@@ -716,7 +716,7 @@ class Renderer {
         let group = new paper.Group();
         locations.forEach(id => {
             let room = this.area.getRoomById(id);
-            if (!room) {
+            if (!room || room.z !== this.area.zIndex) {
                 return
             }
             let startPoint = new paper.Point(room.x + this.roomFactor * 0.5, room.y + this.roomFactor * 0.5)
@@ -724,7 +724,7 @@ class Renderer {
             exits.forEach(exitRoomId => {
                 if (locations.indexOf(exitRoomId) > -1) {
                     let exitRoom = this.area.getRoomById(exitRoomId);
-                    if (!exitRoom) {
+                    if (!exitRoom || exitRoom.z !== this.area.zIndex) {
                         return
                     }
                     let endPoint = new paper.Point(exitRoom.x + this.roomFactor * 0.5, exitRoom.y + this.roomFactor * 0.5)

@@ -1,3 +1,6 @@
+# 0.0.23
+- do not draw path fragments no on the level of displayed area
+
 # 0.0.22
 - handle not existing paths
 
