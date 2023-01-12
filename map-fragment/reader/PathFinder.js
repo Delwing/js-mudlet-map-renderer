@@ -10,7 +10,7 @@ class PathFinder {
     constructor(reader) {
         this.route = new Graph();
         reader.getAreas().forEach(area => area.rooms.forEach(room => {
-            let exits = Object.values(room.exits).concat(Object.values(room.specialExits)).map(item => [item, 1]);
+            let exits = Object.values(room.exits).concat(Object.values(room.specialExits)).map(item => [item, room.weight ?? 1]);
             this.route.addNode(room.id.toString(), Object.fromEntries(exits))
         }))
     }

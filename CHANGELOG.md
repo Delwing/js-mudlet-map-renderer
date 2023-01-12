@@ -1,3 +1,5 @@
+# 0.0.24
+- respect room weights
 # 0.0.23
 - do not draw path fragments no on the level of displayed area
 
