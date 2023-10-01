@@ -156,7 +156,7 @@ class Controls {
     }
 
     move(x, y) {
-        this.view.scrollBy(new paper.Point(x * 50, y * 50));
+        this.view.translate(new paper.Point(x * 50, y * 50).negate());
     }
 
     renderPath(from, to, color) {
