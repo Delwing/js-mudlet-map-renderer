@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "outDir": "./built",
+    "allowJs": true,
+    "target": "es2019",
+    "allowSyntheticDefaultImports": true,
+    "moduleResolution": "node"
+  },
+  "types": [
+    "./src/types"
+  ],
+  "include": ["./src/**/*"],
+}

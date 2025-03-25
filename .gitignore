@@ -6,3 +6,4 @@ examples
 tester
 .vscode
 .DS_Store
+.idea

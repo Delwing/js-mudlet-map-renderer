@@ -69,8 +69,9 @@ class Renderer {
         this.innerExits = ["up", "down", "u", "d", "in", "out", "i", "u"];
         this.paper = new paper.PaperScope();
         this.bounds = this.area.getAreaBounds(this.settings.uniformLevelSize);
+        console.log(this.bounds)
         if (element == undefined) {
-            element = new paper.Size((this.bounds.width + padding * 2) * this.scale, (this.bounds.height + padding * 2) * this.scale);
+            element = new paper.Size(0, 0);
             this.isVisual = false;
         } else {
             this.isVisual = true;
@@ -100,14 +101,14 @@ class Renderer {
         this.renderBackground(this.bounds.minX - padding, this.bounds.minY - padding, this.bounds.maxX + padding, this.bounds.maxY + padding);
         this.renderHeader(this.bounds.minX - padding / 2, this.bounds.maxY + padding / 2);
         this.area.rooms
-            .filter((room) => room.z == this.area.zIndex)
+            .filter((room) => room.z === this.area.zIndex)
             .forEach((room) => {
                 this.renderRoom(room);
             });
         if (this.area.labels !== undefined && this.settings.showLabels) {
             this.bgLabels.activate();
             this.area.labels
-                .filter((label) => label.Z == this.area.zIndex)
+                .filter((label) => label.Z === this.area.zIndex)
                 .forEach((value) => this.renderLabel(value), this);
         }
         this.matrix = new paper.Matrix(1, 0, 0, -1, -this.bounds.minX + padding, this.bounds.maxY + padding).scale(
@@ -178,7 +179,7 @@ class Renderer {
 
         room.render = roomShape;
 
-        room.exitsRenders = room.exitsRenders != undefined ? room.exitsRenders : [];
+        room.exitsRenders = room.exitsRenders !== undefined ? room.exitsRenders : [];
         for (let dir in room.exits) {
             if (this.innerExits.indexOf(dir) <= -1) {
                 if (room.exits.hasOwnProperty(dir) && !room.customLines.hasOwnProperty(dirLongToShort(dir))) {
@@ -238,7 +239,7 @@ class Renderer {
         let secondPoint;
         if (targetRoom) {
             let connectedDir = getKeyByValue(targetRoom.exits, room.id);
-            let isOneWay = connectedDir == undefined;
+            let isOneWay = connectedDir === undefined;
             secondPoint = new paper.Point(this.getExitX(targetRoom.x, connectedDir), this.getExitY(targetRoom.y, connectedDir));
             if (!isOneWay) {
                 path.moveTo(exitPoint);
@@ -514,7 +515,7 @@ class Renderer {
     renderChar(room) {
         this.charsLayer.activate();
         if (room.roomChar) {
-            let size = 0.85 * this.roomFactor / room.roomChar.length;
+            let size = 0.80 * this.roomFactor / room.roomChar.length;
             let x = this.pngRender ? room.render.position.x - 0.1 : room.render.position.x;
             let text = new paper.PointText(x, room.render.position.y + size / 4);
             if (!room.userData || room.userData["system.fallback_symbol_color"] === undefined) {
@@ -525,6 +526,7 @@ class Renderer {
             text.fontSize = size;
             text.content = room.roomChar;
             text.justification = "center";
+            text.fontWeight = "bold"
             text.locked = true;
             text.scale(1, -1);
         }
