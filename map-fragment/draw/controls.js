@@ -158,7 +158,6 @@ export default class Controls {
 
     renderPath(from, to, color) {
         let rooms = this.reader.pathFinder.path(from, to)?.map(number => parseInt(number));
-        console.log(rooms);
         if (rooms) {
             return this.renderer.renderPath(rooms, color);
         }
