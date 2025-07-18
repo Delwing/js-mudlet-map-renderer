@@ -67,7 +67,6 @@ class Renderer {
         this.innerExits = ["up", "down", "u", "d", "in", "out", "i", "u"];
         this.paper = new paper.PaperScope();
         this.targetElement = element;
-        this.bounds = this.area.getAreaBounds(this.settings.uniformLevelSize);
         if (this.targetElement === undefined) {
             this.element = new paper.Size((this.bounds.width + padding * 2) * this.scale, (this.bounds.height + padding * 2) * this.scale);
             this.isVisual = false;
