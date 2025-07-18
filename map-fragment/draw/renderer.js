@@ -50,15 +50,13 @@ class Renderer {
      *
      * @param {HTMLElement} element
      * @param {MapReader} reader
-     * @param {*} area
      * @param {*} colors
      * @param {Settings} settings
      */
-    constructor(element, reader, area, colors, settings) {
+    constructor(element, reader, colors, settings) {
         this.settings = new Settings();
         Object.assign(this.settings, settings);
         this.reader = reader;
-        this.area = area;
         this.colors = colors;
         this.scale = this.settings.scale;
         this.grideSize = this.settings.gridSize;
@@ -68,16 +66,17 @@ class Renderer {
         this.roomDiagonal = this.roomFactor * Math.sqrt(2);
         this.innerExits = ["up", "down", "u", "d", "in", "out", "i", "u"];
         this.paper = new paper.PaperScope();
-        this.bounds = this.area.getAreaBounds(this.settings.uniformLevelSize);
-        if (element == undefined) {
-            element = new paper.Size((this.bounds.width + padding * 2) * this.scale, (this.bounds.height + padding * 2) * this.scale);
-            this.isVisual = false;
-        } else {
-            this.isVisual = true;
-            this.emitter = new EventTarget();
-        }
-        this.paper.setup(element);
-        this.element = element;
+        this.targetElement = element;
+    }
+
+    renderArea(area, pngRender = false) {
+        this.paper.clear()
+        this.paper.setup(this.targetElement);
+        this.exitsRendered = {};
+        this.defualtColor = new paper.Color(this.colors.default[0] / 255, this.colors.default[1] / 255, this.colors.default[2] / 255);
+        this.highlights = new paper.Group();
+        this.highlights.locked = true;
+        this.path = [];
         this.backgroundLayer = new paper.Layer();
         this.bgLabels = new paper.Layer();
         this.linkLayer = new paper.Layer();
@@ -87,12 +86,16 @@ class Renderer {
         this.specialLinkLayer = new paper.Layer();
         this.charsLayer = new paper.Layer();
         this.overlayLayer = new paper.Layer();
-        this.exitsRendered = {};
-        this.defualtColor = new paper.Color(this.colors.default[0] / 255, this.colors.default[1] / 255, this.colors.default[2] / 255);
-        this.highlights = new paper.Group();
-        this.highlights.locked = true;
-        this.path = [];
-        this.render();
+        this.area = area;
+        this.bounds = this.area.getAreaBounds(this.settings.uniformLevelSize);
+        if (this.targetElement === undefined) {
+            this.element = new paper.Size((this.bounds.width + padding * 2) * this.scale, (this.bounds.height + padding * 2) * this.scale);
+            this.isVisual = false;
+        } else {
+            this.isVisual = true;
+            this.emitter = new EventTarget();
+        }
+        this.render()
     }
 
     render(pngRender = false) {      
