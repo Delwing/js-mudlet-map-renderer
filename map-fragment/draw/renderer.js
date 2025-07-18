@@ -93,6 +93,7 @@ class Renderer {
             this.isVisual = false;
         } else {
             this.isVisual = true;
+            this.element = this.targetElement
             this.emitter = new EventTarget();
         }
         this.render()
