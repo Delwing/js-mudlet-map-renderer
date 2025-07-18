@@ -1,6 +1,7 @@
-let Area = require("./Area").Area;
+import Area from "./Area"
+import PathFinder from "./PathFinder";
 
-class MapReader {
+export default class MapReader {
     constructor(data, colors) {
         this.mapDataIndex = {};
         this.roomIndex = {};
@@ -26,6 +27,7 @@ class MapReader {
             this.colors[parseInt(element.envId)] = element.colors;
         });
         this.colors.default = [255, 255, 255];
+        this.pathFinder = new PathFinder(this);
     }
 
     getAreas() {
@@ -82,8 +84,8 @@ class MapReader {
         return this.roomIndex[id];
     }
 
-}
+    getPath(from, to) {
+        return this.pathFinder.path(from, to)
+    }
 
-module.exports = {
-    MapReader
-};
+}

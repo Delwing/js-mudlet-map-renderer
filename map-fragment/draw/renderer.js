@@ -1,6 +1,5 @@
-const paper = require("paper");
-const MapReader = require("../reader/MapReader").MapReader;
-const Controls = require("./controls").Controls;
+import paper from "paper";
+import Controls from "./controls";
 
 const padding = 7;
 const gridSize = 20;
@@ -13,7 +12,7 @@ const Colors = {
     DEFAULT : new paper.Color(1, 1, 1),
 }
 
-class Settings {
+export class Settings {
     constructor() {
         this.isRound = false;
         this.scale = 55;
@@ -45,39 +44,40 @@ paper.Item.prototype.pointerReactor = function (element) {
     }
 };
 
-class Renderer {
+export class Renderer {
     /**
      *
      * @param {HTMLElement} element
      * @param {MapReader} reader
-     * @param {*} area
-     * @param {*} colors
      * @param {Settings} settings
      */
-    constructor(element, reader, area, colors, settings) {
+    constructor(element, reader, settings) {
         this.settings = new Settings();
         Object.assign(this.settings, settings);
         this.reader = reader;
-        this.area = area;
-        this.colors = colors;
+        this.colors = reader.getColors();
         this.scale = this.settings.scale;
-        this.grideSize = this.settings.gridSize;
         this.roomSize = this.settings.roomSize;
         this.roomFactor = this.roomSize / gridSize;
         this.exitFactor = this.settings.exitsSize * 0.01;
         this.roomDiagonal = this.roomFactor * Math.sqrt(2);
         this.innerExits = ["up", "down", "u", "d", "in", "out", "i", "u"];
         this.paper = new paper.PaperScope();
-        this.bounds = this.area.getAreaBounds(this.settings.uniformLevelSize);
-        if (element == undefined) {
+        if (element === undefined) {
             element = new paper.Size((this.bounds.width + padding * 2) * this.scale, (this.bounds.height + padding * 2) * this.scale);
             this.isVisual = false;
         } else {
             this.isVisual = true;
             this.emitter = new EventTarget();
+            this.controls = new Controls(this, this.reader, element, this.paper);
         }
-        this.paper.setup(element);
         this.element = element;
+        console.log("renderer created")
+    }
+
+    clear() {
+        this.paper.clear()
+        this.paper.setup(this.element);
         this.backgroundLayer = new paper.Layer();
         this.bgLabels = new paper.Layer();
         this.linkLayer = new paper.Layer();
@@ -92,6 +92,12 @@ class Renderer {
         this.highlights = new paper.Group();
         this.highlights.locked = true;
         this.path = [];
+    }
+
+    renderArea(area) {
+        this.clear()
+        this.area = area;
+        this.bounds = this.area.getAreaBounds(this.settings.uniformLevelSize);
         this.render();
     }
 
@@ -100,19 +106,19 @@ class Renderer {
         this.renderBackground(this.bounds.minX - padding, this.bounds.minY - padding, this.bounds.maxX + padding, this.bounds.maxY + padding);
         this.renderHeader(this.bounds.minX - padding / 2, this.bounds.maxY + padding / 2);
         this.area.rooms
-            .filter((room) => room.z == this.area.zIndex)
+            .filter((room) => room.z === this.area.zIndex)
             .forEach((room) => {
                 this.renderRoom(room);
             });
         if (this.area.labels !== undefined && this.settings.showLabels) {
             this.bgLabels.activate();
             this.area.labels
-                .filter((label) => label.Z == this.area.zIndex)
+                .filter((label) => label.Z === this.area.zIndex)
                 .forEach((value) => this.renderLabel(value), this);
         }
-        this.matrix = new paper.Matrix(1, 0, 0, -1, -this.bounds.minX + padding, this.bounds.maxY + padding).scale(
+        this.matrix = new paper.Matrix(1, 0, 0, -1, -this.getCalculatedBounds().minX + padding, this.getCalculatedBounds().maxY + padding).scale(
             this.scale,
-            new paper.Point(this.bounds.minX, this.bounds.maxY)
+            new paper.Point(this.getCalculatedBounds().minX, this.getCalculatedBounds().maxY)
         );
         if (this.settings.optimizeDrag) {
             this.rasterLayer.activate();
@@ -122,7 +128,7 @@ class Renderer {
         }
         this.transform();
         if (this.isVisual) {
-            this.controls = new Controls(this, this.reader, this.element, this.paper);
+            this.controls.recalculate()
             this.element.dispatchEvent(new CustomEvent("renderComplete", { detail: this }));
         }
     }
@@ -131,9 +137,9 @@ class Renderer {
         let padding = 1 * this.scale;
         this.paper.project.layers.forEach((layer) => {
             layer.applyMatrix = false;
-            layer.matrix = new paper.Matrix(1, 0, 0, -1, -this.bounds.minX + padding, this.bounds.maxY + padding).scale(
+            layer.matrix = new paper.Matrix(1, 0, 0, -1, -this.getCalculatedBounds().minX + padding, this.getCalculatedBounds().maxY + padding).scale(
                 this.scale,
-                new paper.Point(this.bounds.minX, this.bounds.maxY)
+                new paper.Point(this.getCalculatedBounds().minX, this.getCalculatedBounds().maxY)
             );
         });
     }
@@ -178,7 +184,7 @@ class Renderer {
 
         room.render = roomShape;
 
-        room.exitsRenders = room.exitsRenders != undefined ? room.exitsRenders : [];
+        room.exitsRenders = room.exitsRenders !== undefined ? room.exitsRenders : [];
         for (let dir in room.exits) {
             if (this.innerExits.indexOf(dir) <= -1) {
                 if (room.exits.hasOwnProperty(dir) && !room.customLines.hasOwnProperty(dirLongToShort(dir))) {
@@ -227,7 +233,7 @@ class Renderer {
     }
 
     renderLink(room, targetId, dir) {
-        let exitKey = new Array(room.id, targetId).sort().join("#");
+        let exitKey = [room.id, targetId].sort().join("#");
         if (this.exitsRendered[exitKey] && room.doors[dirLongToShort(dir)] === undefined) {
             return;
         }
@@ -238,7 +244,7 @@ class Renderer {
         let secondPoint;
         if (targetRoom) {
             let connectedDir = getKeyByValue(targetRoom.exits, room.id);
-            let isOneWay = connectedDir == undefined;
+            let isOneWay = connectedDir === undefined;
             secondPoint = new paper.Point(this.getExitX(targetRoom.x, connectedDir), this.getExitY(targetRoom.y, connectedDir));
             if (!isOneWay) {
                 path.moveTo(exitPoint);
@@ -268,14 +274,14 @@ class Renderer {
         this.exitsRendered[exitKey] = true;
         room.exitsRenders.push(path);
         if (targetRoom) {
-            targetRoom.exitsRenders = targetRoom.exitsRenders != undefined ? targetRoom.exitsRenders : [];
+            targetRoom.exitsRenders = targetRoom.exitsRenders !== undefined ? targetRoom.exitsRenders : [];
             targetRoom.exitsRenders.push(path);
         }
 
         return path;
     }
 
-    renderSpecialLink(room, targetId, dir) {
+    renderSpecialLink(room, targetId) {
         this.linkLayer.activate();
 
         let path;
@@ -283,7 +289,7 @@ class Renderer {
         let targetRoom = this.area.getRoomById(targetId);
         let secondPoint;
 
-        if (targetRoom && Object.entries(targetRoom.specialExits).filter(item => item[1] == room.id).filter(item => Object.keys(targetRoom.specialExits).indexOf(item[0] != -1)).length == 0) {
+        if (targetRoom && Object.entries(targetRoom.specialExits).filter(item => item[1] === room.id).filter(item => Object.keys(targetRoom.specialExits).indexOf(item[0] !== -1)).length === 0) {
             path = new paper.Path();
             path.moveTo(exitPoint);
             let connectedDir = getKeyByValue(targetRoom.exits, room.id);
@@ -381,8 +387,7 @@ class Renderer {
     }
 
     renderArrow(lineStart, lineEnd, color, dashArray, strokeWidth, strokeColor, isOneWay) {
-        let arrowPoint = lineEnd;
-        let arrow = new paper.Path.RegularPolygon(arrowPoint, 3, this.roomDiagonal / 6);
+        let arrow = new paper.Path.RegularPolygon(lineEnd, 3, this.roomDiagonal / 6);
         arrow.position = arrow.position.add(arrow.bounds.topCenter.subtract(arrow.bounds.center));
         arrow.rotate(lineEnd.subtract(lineStart).getAngle() + 90, lineEnd);
         let tailLine = new paper.Path.Line(lineStart, arrow.bounds.center);
@@ -433,7 +438,7 @@ class Renderer {
 
         let group = new paper.Group();
 
-        if (direction === "down" || direction == "d") {
+        if (direction === "down" || direction === "d") {
             group.addChild(this.renderInnerTriangle(room, direction, stub));
         }
 
@@ -643,6 +648,10 @@ class Renderer {
         return this.matrix.transform(new paper.Point(x, y));
     }
 
+    getCalculatedBounds() {
+        return this.bounds
+    }
+
     getBounds() {
         return this.backgroundLayer.getBounds();
     }
@@ -748,11 +757,6 @@ class Renderer {
         this.path = [];
     }
 
-
-    clear() {
-        this.paper.clear();
-    }
-
     exportSvg(roomId, padding) {        
         let bounds = 'content';
         if (roomId !== undefined) {
@@ -765,11 +769,6 @@ class Renderer {
         return this.paper.project.exportSVG({ asString: true, bounds: bounds });
     }
 }
-
-module.exports = {
-    Renderer: Renderer,
-    Settings: Settings,
-};
 
 function getKeyByValue(obj, val) {
     for (let k in obj) {

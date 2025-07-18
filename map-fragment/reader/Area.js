@@ -1,4 +1,4 @@
-class Area {
+export default class Area {
     constructor(areaId, areaName, rooms, labels, zIndex, levels) {
         this.areaId = parseInt(areaId);
         this.areaName = areaName;
@@ -68,7 +68,3 @@ class Area {
              this.zIndex, this.levels);   
     }
 }
-
-module.exports = {
-    Area: Area,
-};

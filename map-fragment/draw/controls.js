@@ -1,5 +1,4 @@
-const paper = require("paper");
-const { PathFinder } = require("../reader/PathFinder");
+import paper from "paper";
 
 let selectionStyle = function (item) {
     let style = {
@@ -29,47 +28,46 @@ paper.Item.prototype.select = function (styleFunction) {
     }
 };
 
-class Controls {
-    constructor(renderer, reader, element, paperScope) {
+export default class Controls {
+    constructor(renderer, reader, element) {
         this.renderer = renderer;
         this.reader = reader;
         this.element = element;
-        this.scope = paperScope;
-        this.view = paperScope.view;
         this.element.onwheel = (event) => this.zoom(event);
-        this.activateDrag();
         this.renderer.emitter.addEventListener("roomClick", (event) => this.selectRoom(event.detail));
         this.renderer.emitter.addEventListener("backgroundClick", () => this.deselectRoom());
         this.renderer.emitter.addEventListener("areaArrowClick", (event) => this.goToRoomArea(event.detail));
+        console.log("map controls created")
+    }
 
+    recalculate() {
         let bounds = this.renderer.getBounds();
 
-        this.view.center = bounds.center;
-        this.view.zoom = Math.min(this.view.size.width / bounds.width, this.view.size.height / bounds.height);
-        this.view.minZoom = this.view.zoom;
-
-        this.pathFinder = new PathFinder(reader);
+        this.renderer.paper.view.center = bounds.center;
+        this.renderer.paper.view.zoom = Math.min(this.renderer.paper.view.size.width / bounds.width, this.renderer.paper.view.size.height / bounds.height);
+        this.renderer.paper.view.minZoom = this.renderer.paper.view.zoom;
+        this.activateDrag()
     }
 
     zoom(event) {
         event.preventDefault();
-        let oldZoom = this.view.zoom;
+        let oldZoom = this.renderer.paper.view.zoom;
         this.deltaZoom(event.deltaY > 0 ? 0.9 : 1.1);
-        let viewPos = this.view.viewToProject(new paper.Point(event.offsetX, event.offsetY));
-        let zoomScale = oldZoom / this.view.zoom;
-        let centerAdjust = viewPos.subtract(this.view.center);
-        let offset = viewPos.subtract(centerAdjust.multiply(zoomScale)).subtract(this.view.center);
-        this.view.center = this.view.center.add(offset);
+        let viewPos = this.renderer.paper.view.viewToProject(new paper.Point(event.offsetX, event.offsetY));
+        let zoomScale = oldZoom / this.renderer.paper.view.zoom;
+        let centerAdjust = viewPos.subtract(this.renderer.paper.view.center);
+        let offset = viewPos.subtract(centerAdjust.multiply(zoomScale)).subtract(this.renderer.paper.view.center);
+        this.renderer.paper.view.center = this.renderer.paper.view.center.add(offset);
     }
 
     setZoom(value) {
-        this.view.zoom = value;
-        this.view.zoom = Math.min(Math.max(this.view.zoom, this.view.minZoom), 50);
-        this.element.dispatchEvent(new CustomEvent("zoom", { detail: this.view }));
+        this.renderer.paper.view.zoom = value;
+        this.renderer.paper.view.zoom = Math.min(Math.max(this.renderer.paper.view.zoom, this.renderer.paper.view.minZoom), 50);
+        this.element.dispatchEvent(new CustomEvent("zoom", { detail: this.renderer.view }));
     }
 
     deltaZoom(delta) {
-        this.setZoom(this.view.zoom * delta);
+        this.setZoom(this.renderer.paper.view.zoom * delta);
     }
 
     activateDrag() {
@@ -79,13 +77,13 @@ class Controls {
             this.toggleOptimizedDrag(true);
             this.element.style.cursor = "all-scroll";
             let delta = event.downPoint.subtract(event.point);
-            this.view.translate(delta.negate());
+            this.renderer.paper.view.translate(delta.negate());
             this.isDrag = true;
-            this.element.dispatchEvent(new CustomEvent("drag", { detail: this.view }));
+            this.element.dispatchEvent(new CustomEvent("drag", { detail: this.renderer.view }));
         };
         toolPan.onMouseDown = () => {
             this.isDrag = false;
-            this.element.dispatchEvent(new CustomEvent("drag", { detail: this.view }));
+            this.element.dispatchEvent(new CustomEvent("drag", { detail: this.renderer.view }));
         };
         toolPan.onMouseUp = () => {
             this.isDrag = false;
@@ -147,7 +145,7 @@ class Controls {
     }
 
     centerOnItem(item) {
-        this.view.center = item.localToGlobal(item.position);
+        this.renderer.paper.view.center = item.localToGlobal(item.position);
     }
 
     goToRoomArea(id) {
@@ -156,17 +154,14 @@ class Controls {
     }
 
     move(x, y) {
-        this.view.translate(new paper.Point(x * 50, y * 50).negate());
+        this.renderer.paper.view.translate(new paper.Point(x * 50, y * 50).negate());
     }
 
     renderPath(from, to, color) {
-        let rooms = this.pathFinder.path(from, to)?.map(number => parseInt(number));
+        let rooms = this.reader.pathFinder.path(from, to)?.map(number => parseInt(number));
+        console.log(rooms);
         if (rooms) {
             return this.renderer.renderPath(rooms, color);
         }
     }
 }
-
-module.exports = {
-    Controls: Controls,
-};
