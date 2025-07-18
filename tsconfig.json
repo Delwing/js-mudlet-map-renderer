@@ -1,13 +1,19 @@
 {
   "compilerOptions": {
-    "outDir": "./built",
-    "allowJs": true,
+    "outDir": "./dist",
     "target": "es2019",
-    "allowSyntheticDefaultImports": true,
-    "moduleResolution": "node"
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "declaration": true,
+    "module": "commonjs",
+    "sourceMap": true
   },
   "types": [
     "./src/types"
   ],
   "include": ["./src/**/*"],
+  "lib": [
+    "es2019",
+    "dom"
+  ]
 }

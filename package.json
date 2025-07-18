@@ -1,27 +1,34 @@
 {
-    "name": "mudlet-map-renderer",
-    "version": "0.0.25",
-    "keywords": [
-        "mudlet",
-        "map",
-        "mud"
-    ],
-    "repository": {
-        "url": "git+https://github.com/Delwing/js-mudlet-map-renderer.git"
-    },
-    "bugs": {
-        "url": "https://github.com/Delwing/js-mudlet-map-renderer/issues"
-    },
-    "homepage": "https://github.com/Delwing/js-mudlet-map-renderer#readme",
-    "license": "MIT",
-    "dependencies": {
-        "node-dijkstra": "^2.5.0",
-        "paper-jsdom": "^0.12.17"
-    },
-    "main": "./exports.js",
-    "devDependencies": {
-        "@babel/core": "^7.20.12",
-        "@types/node-dijkstra": "^2.5.6",
-        "babelify": "^10.0.0"
+  "name": "mudlet-map-renderer",
+  "version": "1.0.0",
+  "keywords": [
+    "mudlet",
+    "map",
+    "mud"
+  ],
+  "repository": {
+    "url": "git+https://github.com/Delwing/js-mudlet-map-renderer.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Delwing/js-mudlet-map-renderer/issues"
+  },
+  "homepage": "https://github.com/Delwing/js-mudlet-map-renderer#readme",
+  "license": "MIT",
+  "dependencies": {
+    "node-dijkstra": "^2.5.0",
+    "paper-jsdom": "^0.12.17"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
     }
+  },
+  "devDependencies": {
+    "@babel/core": "^7.20.12",
+    "@types/node-dijkstra": "^2.5.6",
+    "babelify": "^10.0.0",
+    "typescript": "^5.8.2",
+    "tsc-watch": "^6.2.1"
+  }
 }

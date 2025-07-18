@@ -14,7 +14,7 @@ const Colors = {
     DEFAULT: new paper.Color(1, 1, 1)
 };
 
-class Settings {
+export class Settings {
 
     isRound: boolean;
     scale: number;
@@ -57,7 +57,7 @@ paper.Item.prototype.registerClick = function(callback: () => {}) {
 };
 
 paper.Item.prototype.pointerReactor = function(element) {
-    if (element instanceof HTMLCanvasElement) {
+    if (typeof window !== "undefined" && element instanceof HTMLCanvasElement) {
         this.onMouseEnter = () => (element.style.cursor = "pointer");
         this.onMouseLeave = () => (element.style.cursor = "default");
     }
@@ -70,7 +70,6 @@ export default class Renderer {
     area: Area;
     colors: Record<string, number[]>;
     scale: number;
-    gridSize: number;
     roomSize: number;
     roomFactor: number;
     exitFactor: number;
@@ -91,7 +90,7 @@ export default class Renderer {
     charsLayer: paper.Layer;
     overlayLayer: paper.Layer;
     exitsRendered: Record<string, boolean>;
-    defualtColor: paper.Color;
+    defaultColor: paper.Color;
     highlights: paper.Group;
     path: paper.Path.Line[];
     pngRender: boolean;
@@ -135,7 +134,7 @@ export default class Renderer {
         this.charsLayer = new paper.Layer();
         this.overlayLayer = new paper.Layer();
         this.exitsRendered = {};
-        this.defualtColor = new paper.Color(this.colors.default[0] / 255, this.colors.default[1] / 255, this.colors.default[2] / 255);
+        this.defaultColor = new paper.Color(this.colors.default[0] / 255, this.colors.default[1] / 255, this.colors.default[2] / 255);
         this.highlights = new paper.Group();
         this.highlights.locked = true;
         this.path = [];
@@ -168,7 +167,7 @@ export default class Renderer {
             this.rasterLayer.visible = false;
         }
         this.transform();
-        if (this.element instanceof HTMLCanvasElement) {
+        if (typeof window !== "undefined" && this.element instanceof HTMLCanvasElement) {
             this.controls = new Controls(this, this.reader, this.element, this.paper);
             this.element.dispatchEvent(new CustomEvent("renderComplete", { detail: this }));
         }
@@ -265,13 +264,13 @@ export default class Renderer {
 
         this.renderChar(room);
 
-        if (this.element instanceof HTMLCanvasElement) {
+        if (typeof window !== "undefined" && this.element instanceof HTMLCanvasElement) {
             roomShape.pointerReactor(this.element);
             roomShape.registerClick(() => this.emitter.dispatchEvent(new CustomEvent("roomClick", { detail: room })));
         }
     }
 
-    renderLink(room, targetId, dir) {
+    renderLink(room: Room, targetId: number, dir: string) {
         let exitKey = [room.id, targetId].sort().join("#");
         if (this.exitsRendered[exitKey] && room.doors[dirLongToShort(dir)] === undefined) {
             return;
@@ -338,7 +337,7 @@ export default class Renderer {
             path.strokeWidth = this.exitFactor;
         } else {
             secondPoint = new paper.Point(room.x + this.roomFactor / 2, room.y + this.roomFactor / 2);
-            path = this.renderArrow(exitPoint, secondPoint, this.defualtColor, [], this.exitFactor);
+            path = this.renderArrow(exitPoint, secondPoint, this.defaultColor, [], this.exitFactor);
             path.strokeColor = this.settings.linesColor;
             path.scale(1, exitPoint);
             path.rotate(180, exitPoint);
@@ -379,7 +378,7 @@ export default class Renderer {
             let color = room.customLines[dir].attributes.color;
             path.strokeColor = new paper.Color(color.r / 255, color.g / 255, color.b / 255);
         } else {
-            path.strokeColor = this.defualtColor;
+            path.strokeColor = this.defaultColor;
         }
         let lastPoint = new paper.Point(room.x + this.roomFactor / 2, room.y + this.roomFactor / 2);
         path.moveTo(lastPoint);
@@ -428,7 +427,7 @@ export default class Renderer {
     renderArrow(lineStart: paper.Point, lineEnd: paper.Point, color: paper.Color, dashArray: number[], strokeWidth: number, strokeColor?: paper.Color, isOneWay: boolean = false) {
         let arrow = new paper.Path.RegularPolygon(lineEnd, 3, this.roomDiagonal / 6);
         arrow.position = arrow.position.add(arrow.bounds.topCenter.subtract(arrow.bounds.center));
-        arrow.rotate(lineEnd.subtract(lineStart).getAngle(new paper.Point(0, 0)) + 90, lineEnd);
+        arrow.rotate(lineEnd.subtract(lineStart).angle + 90, lineEnd);
         let tailLine = new paper.Path.Line(lineStart, arrow.bounds.center);
         let path = new paper.Group([tailLine, arrow]);
         path.closed = true;
@@ -596,7 +595,11 @@ export default class Renderer {
     }
 
     renderLabel(value) {
-        if (false && value.pixMap) {
+        if (value.pixMap) {
+
+            let background = new paper.Path.Rectangle(new paper.Point(value.X, value.Y - value.Height), new paper.Size(value.Width, value.Height));
+            background.fillColor = new paper.Color(1, 0, 0, 0.2)
+
             //TODO Not really sure how to deal with pixMap labels here so they are ok both in .svg and browser
             let label = new paper.Raster("data:image/png;base64," + value.pixMap);
             label.size.width = value.Width;
