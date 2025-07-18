@@ -8,7 +8,6 @@ export default class PathFinder {
             let exits = Object.values(room.exits).concat(Object.values(room.specialExits)).map(item => [item, room.weight ?? 1]);
             this.route.addNode(room.id.toString(), Object.fromEntries(exits))
         }))
-        console.log("path finder created")
     }
 
     path(from, to) {

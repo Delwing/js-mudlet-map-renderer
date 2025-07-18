@@ -72,7 +72,6 @@ export class Renderer {
             this.controls = new Controls(this, this.reader, element, this.paper);
         }
         this.element = element;
-        console.log("renderer created")
     }
 
     clear() {

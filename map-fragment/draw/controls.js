@@ -37,7 +37,6 @@ export default class Controls {
         this.renderer.emitter.addEventListener("roomClick", (event) => this.selectRoom(event.detail));
         this.renderer.emitter.addEventListener("backgroundClick", () => this.deselectRoom());
         this.renderer.emitter.addEventListener("areaArrowClick", (event) => this.goToRoomArea(event.detail));
-        console.log("map controls created")
     }
 
     recalculate() {
