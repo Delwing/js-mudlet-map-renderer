@@ -746,7 +746,9 @@ export class Renderer {
                 }
             })
         })
-        group.strokeColor = new paper.Color(color[0], color[1], color[2]);
+        if (color !== undefined) {
+            group.strokeColor = new paper.Color(color[0], color[1], color[2]);
+        }
         group.locked = true;
         return group;
     }
