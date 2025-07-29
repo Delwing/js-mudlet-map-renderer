@@ -722,6 +722,11 @@ export class Renderer {
     renderPath(locations, color) {
         this.overlayLayer.activate();
         let group = new paper.Group();
+
+        if (color === undefined) {
+            color = [0.4, 0.9, 0.3];
+        }
+
         locations.forEach(id => {
             let room = this.area.getRoomById(id);
             if (!room || room.z !== this.area.zIndex) {
@@ -738,17 +743,12 @@ export class Renderer {
                     let endPoint = new paper.Point(exitRoom.x + this.roomFactor * 0.5, exitRoom.y + this.roomFactor * 0.5)
                     let line = new paper.Path.Line(startPoint, endPoint)
                     line.strokeWidth = this.exitFactor * 4;
-                    if (color === undefined) {
-                        color = [0.4, 0.9, 0.3];
-                    }
                     this.path.push(line);
                     group.addChild(line);
                 }
             })
         })
-        if (color !== undefined) {
-            group.strokeColor = new paper.Color(color[0], color[1], color[2]);
-        }
+        group.strokeColor = new paper.Color(color[0], color[1], color[2]);
         group.locked = true;
         return group;
     }
