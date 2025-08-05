@@ -1,6 +1,5 @@
 const assert = require('assert');
 const fs = require('fs');
-const { createCanvas } = require('canvas');
 const { Renderer, MapReader, Settings } = require('../exports');
 
 const data = [
@@ -23,14 +22,14 @@ const padding = 7;
 const bounds = area.getAreaBounds();
 const width = (bounds.maxX - bounds.minX + padding * 2) * settings.scale;
 const height = (bounds.maxY - bounds.minY + padding * 2) * settings.scale;
-const canvas = createCanvas(width, height);
 
-const renderer = new Renderer(canvas, reader, reader.getColors(), settings);
+const renderer = new Renderer(null, reader, reader.getColors(), settings);
 renderer.isVisual = false;
 renderer.renderArea(area);
 
-const outPath = 'test/render-output.png';
-fs.writeFileSync(outPath, canvas.toBuffer('image/png'));
+
+const outPath = 'test/render-output.svg';
+fs.writeFileSync(outPath, renderer.exportSvg(1, padding));
 assert.ok(fs.existsSync(outPath));
 const stats = fs.statSync(outPath);
 assert.ok(stats.size > 0);
