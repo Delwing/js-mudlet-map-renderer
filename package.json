@@ -20,10 +20,10 @@
     },
     "main": "./exports.js",
     "scripts": {
-        "test": "node test/pathfinder.test.js"
+        "test": "node test/pathfinder.test.js && node test/render.test.js"
     },
     "devDependencies": {
-        "babelify": "^10.0.0",
-        "@babel/core": "^7.20.12"
+        "@babel/core": "^7.20.12",
+        "babelify": "^10.0.0"
     }
 }
