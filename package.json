@@ -15,15 +15,16 @@
     "homepage": "https://github.com/Delwing/js-mudlet-map-renderer#readme",
     "license": "MIT",
     "dependencies": {
+        "canvas": "^2.11.2",
         "node-dijkstra": "^2.5.0",
         "paper-jsdom": "^0.12.17"
     },
     "main": "./exports.js",
     "scripts": {
-        "test": "node test/pathfinder.test.js"
+        "test": "node test/pathfinder.test.js && node test/render.test.js"
     },
     "devDependencies": {
-        "babelify": "^10.0.0",
-        "@babel/core": "^7.20.12"
+        "@babel/core": "^7.20.12",
+        "babelify": "^10.0.0"
     }
 }
