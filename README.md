@@ -38,6 +38,13 @@ fs.writeFileSync("mapFragment.svg", renderer.exportSvg(roomId, 10));
 console.log("Map generated");
 ```
 
+## Pathfinding
+
+The library includes a simple `PathFinder` that searches for routes between
+rooms. The path finder now builds route graphs on demand and caches both the
+graphs and calculated paths. When two rooms reside in the same area only that
+area's graph is used, which speeds up path calculations for large maps.
+
 ## Settings and their default values 
 ```js
 class Settings {
