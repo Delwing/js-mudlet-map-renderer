@@ -1,5 +1,9 @@
 # Mudlet Map Renderer
 
+> ⚠️ **This repository is archived and no longer maintained.**
+> Development has moved to a new repository: **https://github.com/Delwing/mudlet-map-renderer**
+> Please use the new repository for the latest code, issues, and contributions.
+
 Mudlet map rendering library. Can be used in Node.js and in browser.
 
 Until version `1.0.0` API is subject of change. Use with caution!
